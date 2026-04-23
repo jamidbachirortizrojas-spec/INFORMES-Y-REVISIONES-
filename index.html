@@ -1,0 +1,2816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Trabajo - CEDENAR S.A.E.S.P.</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 0.8em;
+        }
+
+        .form-section {
+            padding: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px 25px;
+            font-size: 1.3em;
+            margin: -30px -30px 20px -30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-item input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .codigos-fallas-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .codigos-fallas-box h4 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+        }
+
+        /* Estilos para combobox con búsqueda */
+        .combobox-container {
+            position: relative;
+        }
+
+        .combobox-container input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .combobox-container input:focus {
+            border-color: white;
+            outline: none;
+        }
+
+        .combobox-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .combobox-list.show {
+            display: block;
+        }
+
+        .combobox-category {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 0.9em;
+            position: sticky;
+            top: 0;
+        }
+
+        .combobox-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            font-size: 0.95em;
+            display: flex;
+            gap: 10px;
+        }
+
+        .combobox-item:last-child {
+            border-bottom: none;
+        }
+
+        .combobox-item:hover {
+            background: #f0f4ff;
+        }
+
+        .combobox-item .codigo {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 80px;
+        }
+
+        .combobox-item .descripcion {
+            color: #555;
+        }
+
+        .combobox-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .combobox-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .combobox-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .materials-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .materials-table th,
+        .materials-table td {
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .materials-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .materials-table input,
+        .materials-table select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3c72;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .photo-section {
+            margin-top: 20px;
+        }
+
+        .photo-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .photo-tab {
+            padding: 12px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .photo-tab:hover {
+            border-color: #2a5298;
+        }
+
+        .photo-tab.active {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-color: #1e3c72;
+        }
+
+        .photo-tab svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .photo-panel {
+            display: none;
+        }
+
+        .photo-panel.active {
+            display: block;
+        }
+
+        .photo-category {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .photo-category h4 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .photo-category h4 svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .photo-upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .photo-upload-area:hover {
+            border-color: #2a5298;
+            background: #f0f4ff;
+        }
+
+        .photo-upload-area.dragover {
+            border-color: #28a745;
+            background: #e8f5e9;
+        }
+
+        .photo-upload-area svg {
+            width: 48px;
+            height: 48px;
+            fill: #666;
+            margin-bottom: 10px;
+        }
+
+        .photo-upload-area p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .photo-upload-area input {
+            display: none;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .photo-item .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .photo-item .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .photo-item .delete-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .coord-field {
+            margin-top: 15px;
+        }
+
+        .coord-field input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .coord-field label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 30px;
+            background: #f8f9fa;
+            flex-wrap: wrap;
+        }
+
+        .contact-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .contact-info strong {
+            color: #1e3c72;
+        }
+
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin-top: 20px;
+            justify-content: center;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .signature-box {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .signature-box h4 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .signature-line {
+            border-bottom: 2px solid #333;
+            margin-top: 50px;
+            margin-bottom: 10px;
+        }
+
+        .signature-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .no-photos {
+            color: #999;
+            font-style: italic;
+        }
+
+        .codigo-material-box {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .codigo-material-box h4 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .actions {
+                display: none;
+            }
+
+            .photo-upload-area {
+                display: none;
+            }
+
+            .photo-tabs {
+                display: none;
+            }
+
+            .photo-panel {
+                display: block !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .section-title {
+                margin: -20px -20px 15px -20px;
+                padding: 12px 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+
+        /* Ocultar campos en modo revisión */
+        .revision-field {
+            display: block;
+        }
+
+        .revision-field.hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img src="cedenarlogo.png" alt="CEDENAR Logo" class="logo" style="max-width:80px; max-height:80px; object-fit:contain;">
+                <div>
+                    <h1>ORDEN DE TRABAJO DISTRIBUIDOR</h1>
+                    <p>Centrales Eléctricas de Nariño S.A.E.S.P.</p>
+                </div>
+            </div>
+            <p>Gestión de Mantenimiento y Trabajos Eléctricos</p>
+        </div>
+
+        <form id="workOrderForm">
+            <!-- Sección 1: Planificación del Evento -->
+            <div class="form-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
+                    1. PLANIFICACIÓN DEL EVENTO
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo de Evento:</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="programado" name="tipoEvento" value="PROGRAMADO" onchange="toggleRevisionMode()">
+                                <label for="programado">Programado</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="eventual" name="tipoEvento" value="EVENTUAL" checked onchange="toggleRevisionMode()">
+                                <label for="eventual">Eventual</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="emergencia" name="tipoEvento" value="EMERGENCIA" onchange="toggleRevisionMode()">
+                                <label for="emergencia">Emergencia</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="revision" name="tipoEvento" value="REVISION" onchange="toggleRevisionMode()">
+                                <label for="revision">Revisión</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group revision-field">
+                        <label for="consignacion">Consignación No.:
+                        <input type="text" id="consignacion" name="consignacion" placeholder="Número de consignación">
+                    </div>
+
+                    <div class="form-group revision-field">
+                        <label for="fechaConsignacion">Fecha Consignación:</label>
+                        <input type="date" id="fechaConsignacion" name="fechaConsignacion">
+                    </div>
+
+                    <div class="form-group revision-field">
+                        <label for="ordenTrabajo">Orden de Trabajo No.:</label>
+                        <input type="text" id="ordenTrabajo" name="ordenTrabajo" placeholder="Ej: CEN57094CDN">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaInicioProg">Fecha Inicio Prog.:</label>
+                        <input type="date" id="fechaInicioProg" name="fechaInicioProg">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="horaInicioProg">Hora Inicio Prog.:</label>
+                        <input type="time" id="horaInicioProg" name="horaInicioProg">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="circuito">Circuito:</label>
+                        <select id="circuito" name="circuito">
+                            <option value="">Seleccione un circuito</option>
+                            <optgroup label="41JA">
+                                <option value="41JA16">41JA16</option>
+                                <option value="41JA17">41JA17</option>
+                                <option value="41JA18">41JA18</option>
+                                <option value="41JA19">41JA19</option>
+                                <option value="41JA41EN">41JA41EN</option>
+                                <option value="41JA15CH">41JA15CH</option>
+                            </optgroup>
+                            <optgroup label="41PA">
+                                <option value="41PA01">41PA01</option>
+                                <option value="41PA02">41PA02</option>
+                                <option value="41PA03">41PA03</option>
+                                <option value="41PA04">41PA04</option>
+                                <option value="41PA05">41PA05</option>
+                                <option value="41PA06">41PA06</option>
+                                <option value="ALPM0001">ALPM0001</option>
+                            </optgroup>
+                            <optgroup label="41RB">
+                                <option value="41RB01">41RB01</option>
+                                <option value="41RB54SP">41RB54SP</option>
+                                <option value="41RB59TN">41RB59TN</option>
+                            </optgroup>
+                            <optgroup label="59TN">
+                                <option value="59TN01">59TN01</option>
+                                <option value="59TN02">59TN02</option>
+                            </optgroup>
+                            <optgroup label="41CA">
+                                <option value="41CA7">41CA7</option>
+                                <option value="41CA8">41CA8</option>
+                                <option value="41CA9">41CA9</option>
+                                <option value="41CA10">41CA10</option>
+                                <option value="41CA11">41CA11</option>
+                                <option value="41CA12">41CA12</option>
+                                <option value="41CA13">41CA13</option>
+                                <option value="41CA14">41CA14</option>
+                                <option value="41CA15">41CA15</option>
+                                <option value="41CA20">41CA20</option>
+                                <option value="41CA41EX">41CA41EX</option>
+                                <option value="41CA41RB">41CA41RB</option>
+                                <option value="41CA15CH">41CA15CH</option>
+                                <option value="41CA41BA">41CA41BA</option>
+                                <option value="41CA41NA">41CA41NA</option>
+                            </optgroup>
+                            <optgroup label="15CH">
+                                <option value="15CH01">15CH01</option>
+                                <option value="15CH02">15CH02</option>
+                                <option value="15CHTF1N3">15CHTF1N3</option>
+                            </optgroup>
+                            <optgroup label="41CA41CL">
+                                <option value="41CL01">41CL01</option>
+                            </optgroup>
+                            <optgroup label="41EN">
+                                <option value="41EN01">41EN01</option>
+                                <option value="41ENTF1N3">41ENTF1N3</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="zona">Zona:</label>
+                        <select id="zona" name="zona">
+                            <option value="">Seleccione una zona</option>
+                            <option value="Norte">Norte</option>
+                            <option value="Occidente">Occidente</option>
+                            <option value="Sur">Sur</option>
+                            <option value="Pacifico">Pacífico</option>
+                            <option value="Centro">Centro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="municipio">Municipio:</label>
+                        <select id="municipio" name="municipio">
+                            <option value="">Seleccione un municipio</option>
+                            <optgroup label="NARIÑO">
+                                <option value="PASTO">PASTO</option>
+                                <option value="CHACHAGÜI">CHACHAGÜI</option>
+                                <option value="RIO BOBO">RIO BOBO</option>
+                                <option value="TANGUA">TANGUA</option>
+                                <option value="CATAMBUCO">CATAMBUCO</option>
+                                <option value="ALBAN">ALBAN</option>
+                                <option value="ALDANA">ALDANA</option>
+                                <option value="ANCUYA">ANCUYA</option>
+                                <option value="ARBOLEDA">ARBOLEDA</option>
+                                <option value="BARBACOAS">BARBACOAS</option>
+                                <option value="BELEN">BELEN</option>
+                                <option value="BUESACO">BUESACO</option>
+                                <option value="COLON">COLON</option>
+                                <option value="CONSACA">CONSACA</option>
+                                <option value="CONTADERO">CONTADERO</option>
+                                <option value="CORDOBA">CORDOBA</option>
+                                <option value="CUASPUD">CUASPUD</option>
+                                <option value="CUMBAL">CUMBAL</option>
+                                <option value="CUMBITARA">CUMBITARA</option>
+                                <option value="BERRUEQUILLO">EL BERRUEQUILLO</option>
+                                <option value="FUNES">FUNES</option>
+                                <option value="GUACHUCAL">GUACHUCAL</option>
+                                <option value="GUAITARILLA">GUAITARILLA</option>
+                                <option value="GUALMATAN">GUALMATAN</option>
+                                <option value="ILES">ILES</option>
+                                <option value="IMUES">IMUES</option>
+                                <option value="IPIALES">IPIALES</option>
+                                <option value="LA CRUZ">LA CRUZ</option>
+                                <option value="LA FLORIDA">LA FLORIDA</option>
+                                <option value="LA LLANADA">LA LLANADA</option>
+                                <option value="LA VEGA">LA VEGA</option>
+                                <option value="LEIVA">LEIVA</option>
+                                <option value="LINARES">LINARES</option>
+                                <option value="LOS ANDES">LOS ANDES</option>
+                                <option value="MAGUI">MAGUI</option>
+                                <option value="MALLAMA">MALLAMA</option>
+                                <option value="MOSO">MOSO</option>
+                                <option value="NARIÑO">NARIÑO</option>
+                                <option value="OLAYA HERRERA">OLAYA HERRERA</option>
+                                <option value="OSPINA">OSPINA</option>
+                                <option value="FRANCISCO PIZARRO">FRANCISCO PIZARRO</option>
+                                <option value="POLICARPA">POLICARPA</option>
+                                <option value="POTOSI">POTOSI</option>
+                                <option value="PROVIDENCIA">PROVIDENCIA</option>
+                                <option value="PUERRES">PUERRES</option>
+                                <option value="PUPIALES">PUPIALES</option>
+                                <option value="RICAURTE">RICAURTE</option>
+                                <option value="ROBERTO PAYAN">ROBERTO PAYAN</option>
+                                <option value="SAMANIEGO">SAMANIEGO</option>
+                                <option value="SANDONA">SANDONA</option>
+                                <option value="SAN BERNARDO">SAN BERNARDO</option>
+                                <option value="SAN JOSE">SAN JOSE</option>
+                                <option value="SAN PABLO">SAN PABLO</option>
+                                <option value="SAN PEDRO DE CARTAGO">SAN PEDRO DE CARTAGO</option>
+                                <option value="SANTA CRUZ">SANTA CRUZ</option>
+                                <option value="SAPUYES">SAPUYES</option>
+                                <option value="TAMINANGO">TAMINANGO</option>
+                                <option value="TUQUERRES">TUQUERRES</option>
+                                <option value="YACUANQUER">YACUANQUER</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion">Dirección:</label>
+                        <input type="text" id="direccion" name="direccion" placeholder="Ej: SAN JUAN ALTO">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="coordinador">Coordinador Asignado:</label>
+                        <select id="coordinador" name="coordinador">
+                            <option value="">Seleccione un coordinador</option>
+                            <option value="JAMID BACHIR ORTIZ ROJAS">JAMID BACHIR ORTIZ ROJAS</option>
+                            <option value="JAIRO ALEXANDER ORTIZ">JAIRO ALEXANDER ORTIZ</option>
+                            <option value="JAIME ARTURO LOPEZ">JAIME ARTURO LOPEZ</option>
+                            <option value="JUAN CARLOS RIASCOS">JUAN CARLOS RIASCOS</option>
+                            <option value="HENRY MARCELO PEREZ">HENRY MARCELO PEREZ</option>
+                            <option value="HENRY TORREZ CASTRO">HENRY TORREZ CASTRO</option>
+                            <option value="LUIS HERNAN PASICHANA">LUIS HERNAN PASICHANA</option>
+                        </select>
+                    </div>
+
+                    <!-- Selector de Códigos de Fallas con Búsqueda -->
+                    <div class="codigos-fallas-box full-width">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                            SELECCIÓN CÓDIGOS DE FALLAS (Escriba para buscar por código o descripción)
+                        </h4>
+                        <div class="combobox-container" id="codigosFallasContainer">
+                            <input type="text" id="codigoFallaSearch" placeholder="Escriba código o descripción..." autocomplete="off">
+                            <div class="combobox-list" id="codigosFallasList"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="descripcionTrabajos">Descripción de Trabajos a Realizar:</label>
+                        <textarea id="descripcionTrabajos" name="descripcionTrabajos" placeholder="Ej: P114: OTRAS CAUSAS DE PROGRAMACIÓN --- P460: CONEXIÓN RED AÉREA NUEVA"></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="observaciones">Observaciones:</label>
+                        <textarea id="observaciones" name="observaciones" placeholder="Observaciones adicionales"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipo de Carga:</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="cargaNoSuspendida" name="tipoCarga" value="NO_SUSPENDIDA" checked>
+                                <label for="cargaNoSuspendida">No Suspendida</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="cargaSuspendida" name="tipoCarga" value="SUSPENDIDA">
+                                <label for="cargaSuspendida">Suspendida</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="lineaViva" name="tipoCarga" value="LINEA_VIVA">
+                                <label for="lineaViva">Línea Viva</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 2: Ejecución del Trabajo -->
+            <div class="form-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    2. EJECUCIÓN DEL TRABAJO
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fechaInicio">Fecha Inicio:</label>
+                        <input type="date" id="fechaInicio" name="fechaInicio">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaFinalizacion">Fecha Finalización:</label>
+                        <input type="date" id="fechaFinalizacion" name="fechaFinalizacion">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="observacionesEjecucion">Observaciones del Trabajo:</label>
+                        <textarea id="observacionesEjecucion" name="observacionesEjecucion" placeholder="Observaciones de la ejecución del trabajo"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 3: Materiales -->
+            <div class="form-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/></svg>
+                    3. MATERIALES
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="requisicionMateriales">Requisición Materiales No.:</label>
+                        <input type="text" id="requisicionMateriales" name="requisicionMateriales" placeholder="Número de requisición">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaRequisicion">Fecha:</label>
+                        <input type="date" id="fechaRequisicion" name="fechaRequisicion">
+                    </div>
+                </div>
+
+                <!-- Selector de Materiales con Búsqueda -->
+                <div class="codigo-material-box">
+                    <h4>
+                        <svg viewBox="0 0 24 24" fill="#1e3c72" style="width:18px;height:18px;"><path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/></svg>
+                        Buscar Material (Código o Nombre)
+                    </h4>
+                    <div class="combobox-container" id="materialesContainer">
+                        <input type="text" id="materialSearch" placeholder="Escriba código o nombre del material..." autocomplete="off">
+                        <div class="combobox-list" id="materialesList"></div>
+                    </div>
+                </div>
+
+                <table class="materials-table" id="materialsTable">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Código</th>
+                            <th>Cantidad</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materialsBody">
+                        <tr>
+                            <td><input type="text" name="materialDescripcion[]" placeholder="Descripción del material"></td>
+                            <td><input type="text" name="materialCodigo[]" placeholder="Código"></td>
+                            <td><input type="number" name="materialCantidad[]" placeholder="Cantidad" min="1"></td>
+                            <td><button type="button" class="btn btn-danger" onclick="removeMaterialRow(this)">X</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 15px;">
+                    <button type="button" class="btn btn-secondary" onclick="addMaterialRow()">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        Agregar Material
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sección 4: Fotos del Trabajo -->
+            <div class="form-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    4. REGISTRO FOTOGRÁFICO
+                </div>
+
+                <div class="photo-tabs">
+                    <button type="button" class="photo-tab active" onclick="showPhotoPanel('realizado')" id="tabRealizado">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                        TRABAJO REALIZADO
+                    </button>
+                    <button type="button" class="photo-tab" onclick="showPhotoPanel('pendiente')" id="tabPendiente">
+                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        TRABAJO PENDIENTE POR REALIZAR
+                    </button>
+                </div>
+
+                <!-- Panel de Trabajo Realizado -->
+                <div class="photo-panel active" id="panelRealizado">
+                    <div class="photo-section">
+                        <!-- Fotos del Antes -->
+                        <div class="photo-category">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="#dc3545"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                                FOTOS DEL ANTES
+                            </h4>
+                            <p style="color: #666; margin-bottom: 15px;">Imágenes del estado inicial antes de comenzar el trabajo</p>
+                            <div class="photo-upload-area" data-category="antes" onclick="document.getElementById('antesInput').click()">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                                <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                                <input type="file" id="antesInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'antes')">
+                                <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); takePhotoWithLocation('antes')">
+                                        📷 Tomar Foto con Ubicación
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); document.getElementById('antesInput').click()">
+                                        🖼️ Seleccionar de Galería
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="photo-grid" id="antesGrid"></div>
+                        </div>
+
+                        <!-- Fotos del Durante -->
+                        <div class="photo-category">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="#ffc107"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                                FOTOS DEL DURANTE
+                            </h4>
+                            <p style="color: #666; margin-bottom: 15px;">Imágenes del proceso de trabajo en curso</p>
+                            <div class="photo-upload-area" data-category="durante" onclick="document.getElementById('duranteInput').click()">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                                <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                                <input type="file" id="duranteInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'durante')">
+                                <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); takePhotoWithLocation('durante')">
+                                        📷 Tomar Foto con Ubicación
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); document.getElementById('duranteInput').click()">
+                                        🖼️ Seleccionar de Galería
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="photo-grid" id="duranteGrid"></div>
+                        </div>
+
+                        <!-- Fotos del Después -->
+                        <div class="photo-category">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="#28a745"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                                FOTOS DEL DESPUÉS
+                            </h4>
+                            <p style="color: #666; margin-bottom: 15px;">Imágenes del resultado final una vez completado el trabajo</p>
+                            <div class="photo-upload-area" data-category="despues" onclick="document.getElementById('despuesInput').click()">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                                <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                                <input type="file" id="despuesInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'despues')">
+                                <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); takePhotoWithLocation('despues')">
+                                        📷 Tomar Foto con Ubicación
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); document.getElementById('despuesInput').click()">
+                                        🖼️ Seleccionar de Galería
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="photo-grid" id="despuesGrid"></div>
+                        </div>
+
+                        <!-- Fotos y Coordenadas del Activo Instalado -->
+                        <div class="photo-category">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="#6f42c1"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                FOTOS DEL ACTIVO INSTALADO
+                            </h4>
+                            <p style="color: #666; margin-bottom: 15px;">Imágenes y coordenadas del activo instalado</p>
+                            <div class="photo-upload-area" data-category="activo" onclick="document.getElementById('activoInput').click()">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                                <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                                <input type="file" id="activoInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'activo')">
+                                <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); takePhotoWithLocation('activo')">
+                                        📷 Tomar Foto con Ubicación
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); document.getElementById('activoInput').click()">
+                                        🖼️ Seleccionar de Galería
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="photo-grid" id="activoGrid"></div>
+                            <div class="coord-field">
+                                <label for="coordenadasActivo">Coordenadas del Activo Instalado:</label>
+                                <input type="text" id="coordenadasActivo" name="coordenadasActivo" placeholder="Ej: 1.2136, -77.1234">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Trabajo Pendiente -->
+                <div class="photo-panel" id="panelPendiente">
+                    <div class="photo-section">
+                        <!-- Fotos del Lugar donde se va a realizar el trabajo -->
+                        <div class="photo-category">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="#fd7e14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                FOTOS DEL LUGAR DONDE SE VA A REALIZAR EL TRABAJO
+                            </h4>
+                            <p style="color: #666; margin-bottom: 15px;">Imágenes del lugar donde se realizará el trabajo pendiente</p>
+                            <div class="photo-upload-area" data-category="lugar" onclick="document.getElementById('lugarInput').click()">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                                <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                                <input type="file" id="lugarInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'lugar')">
+                                <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); takePhotoWithLocation('lugar')">
+                                        📷 Tomar Foto con Ubicación
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); document.getElementById('lugarInput').click()">
+                                        🖼️ Seleccionar de Galería
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="photo-grid" id="lugarGrid"></div>
+                            <div class="coord-field">
+                                <label for="coordenadasLugar">Coordenadas del Lugar del Trabajo:</label>
+                                <input type="text" id="coordenadasLugar" name="coordenadasLugar" placeholder="Ej: 1.2136, -77.1234">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 5: Firmas -->
+            <div class="form-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 10H7v-2h9v2zm0 4H7v-2h9v2zm0 4H7v-2h9v2zm4-8h-3V6h3v6z"/></svg>
+                    5. FIRMA EN CONSTANCIA
+                </div>
+
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <h4>Coordinador de Grupo</h4>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label for="nombreCoordinadorFirma">Nombre:</label>
+                            <input type="text" id="nombreCoordinadorFirma" name="nombreCoordinadorFirma" placeholder="Nombre del coordinador">
+                        </div>
+                        <div class="signature-line"></div>
+                        <p class="signature-name" id="displayCoordinador">Firma</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones del Formulario -->
+            <div class="actions">
+                <button type="button" class="btn btn-success" onclick="guardarOrden()">
+                    <svg viewBox="0 0 24 24" fill="white"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                    Guardar Orden
+                </button>
+                <button type="button" class="btn btn-primary" onclick="generarPDF()">
+                    <svg viewBox="0 0 24 24" fill="white"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V4H10v1.5h1v1.5H10c.83 0 1.5.67 1.5 1.5zM12 12c-1.65 0-3-1.35-3-3V4h1v5c0 .55.45 1 1 1s1-.45 1-1V4h1v5c0 1.65-1.35 3-3 3zM18 12c-.55 0-1-.45-1-1V4h1v7c0 .55.45 1 1 1s1-.45 1-1V4h1v7c0 .55-.45 1-1 1z"/></svg>
+                    Generar PDF
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="imprimirFormulario()">
+                    <svg viewBox="0 0 24 24" fill="white"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                    Imprimir
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="nuevoFormulario()">
+                    <svg viewBox="0 0 24 24" fill="white"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    Nueva Orden
+                </button>
+                <button type="button" class="btn btn-danger" onclick="eliminarOrden()">
+                    <svg viewBox="0 0 24 24" fill="white"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    Eliminar
+                </button>
+            </div>
+        </form>
+
+        <div class="contact-info">
+            <p><strong>CEDENAR S.A.E.S.P.</strong> - Centrales Eléctricas de Nariño S.A.E.S.P.</p>
+            <p>S.A. E.S.P.: 115-7336900 | Bomberos: 119-7215090 | Cruz Roja: 7232993</p>
+            <p>Hospital Departamental Pasto: 7214525 | Policía Nacional: 7334013-7235852</p>
+            <p style="margin-top: 10px; font-size: 0.85em;">Tratará los datos personales conforme a la ley de protección de datos 1581/2012.</p>
+        </div>
+    </div>
+
+    <script>
+        // Almacenamiento de fotos en memoria
+        const photos = {
+            antes: [],
+            durante: [],
+            despues: [],
+            activo: [],
+            lugar: []
+        };
+
+        // Base de datos de códigos de fallas
+        const codigosFallas = [
+            // Fallas de Líneas de Distribución 13.2 KV
+            {codigo: 'F000', descripcion: 'Fusible Directo', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F001', descripcion: 'Acercamiento De Línea', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F002', descripcion: 'Inversión De Fases', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F003', descripcion: 'Puente Roto', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F004', descripcion: 'Puente Flojo 13.2 Kv', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F005', descripcion: 'Abrir Puente 13.2 Kv', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F006', descripcion: 'Cerrar Puente 13.2 Kv', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F007', descripcion: 'Linea En El Suelo 13.2 Kv', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F008', descripcion: 'Objetos Sobre Red 13.2 Kv', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F009', descripcion: 'Lineas Cruzadas / Distencionadas', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F010', descripcion: 'Sobrecarga Del Circuito', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F011', descripcion: 'Fusible Quemado Del Seccionador', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F012', descripcion: 'Cañuela Quemada Del Seccionador', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F013', descripcion: 'Obc. Seccionador Dañado', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F014', descripcion: 'Aislador Dañado', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F015', descripcion: 'Linea Suelta Del Aislador', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F016', descripcion: 'Condiciones Atmosféricas', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F017', descripcion: 'Fallas Por Operación', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F018', descripcion: 'Disparo Por Sobre corriente', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F019', descripcion: 'Disparo Por Línea A Tierra', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F020', descripcion: 'Poste Quebrado En M.T', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F021', descripcion: 'Disparo Por Sobre voltaje', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F022', descripcion: 'Anclaje Roto', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F023', descripcion: 'Anclaje Energizado', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F024', descripcion: 'Reconectador Falla', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F025', descripcion: 'Mufas Averiadas', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F026', descripcion: 'Linea Subterránea', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F027', descripcion: 'Particulares En La Red', categoria: 'FALLAS LÍNEAS MT'},
+            {codigo: 'F028', descripcion: 'Otra Causa', categoria: 'FALLAS LÍNEAS MT'},
+            // Trabajos Programados 13.2 KV
+            {codigo: 'P100', descripcion: 'Mantenimiento Red Aérea', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P101', descripcion: 'Reubicación De Línea 13.2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P102', descripcion: 'Retro de Línea 13.2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P103', descripcion: 'Remodelación Línea 13.2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P104', descripcion: 'Poda De Arboles', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P105', descripcion: 'Conexión Red Aérea Nueva', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P106', descripcion: 'Mantenimiento Red Subterránea', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P107', descripcion: 'Pruebas Operativas', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P108', descripcion: 'Transferencia De Carga', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P109', descripcion: 'Retro De Poste En 13.2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P110', descripcion: 'Reubicación De Poste En 13.2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P111', descripcion: 'Cambio De Poste En 13.2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P112', descripcion: 'Retro Anclaje En 13,2 Kv', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P113', descripcion: 'Solicitud Por Usuarios', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P114', descripcion: 'Otras Causas De Programación', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P115', descripcion: 'Abrir Seccionador', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P116', descripcion: 'Cerrar Seccionador', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P117', descripcion: 'Abrir Reconectador', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P118', descripcion: 'Cerrar Reconectador', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P119', descripcion: 'Abrir O.B.C.', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P120', descripcion: 'Cerrar O.B.C.', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P121', descripcion: 'Suspension Del Circuito', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P122', descripcion: 'Conexión Red Subterránea Nueva', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P123', descripcion: 'Reubicación Anclaje', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P124', descripcion: 'Reposición Anclaje', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P125', descripcion: 'Encamisado De Línea', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P126', descripcion: 'Apertura De Huecos', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            {codigo: 'P127', descripcion: 'Contratista En La Red', categoria: 'TRABAJOS PROGRAMADOS MT'},
+            // Fallas en Transformadores
+            {codigo: 'F250', descripcion: 'Fusibles Quemados Transformador', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F251', descripcion: 'Cañuela Quemada Transformador', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F252', descripcion: 'Cuba Del Transformador Energizada', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F253', descripcion: 'Corta Circuito Dañado', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F254', descripcion: 'Pararrayos Explotado', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F255', descripcion: 'Bajante Roto 13.2Kv', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F256', descripcion: 'Fallas Equipo Adicional (Macro medidores)', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F257', descripcion: 'Fallas Trafo (Aéreo/Subterráneo)', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F258', descripcion: 'Fallas De Protecciones Trafo/Cables', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F259', descripcion: 'Fuga De Aceite', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F260', descripcion: 'Transformador Quemado', categoria: 'FALLAS TRANSFORMADORES'},
+            {codigo: 'F261', descripcion: 'Otra Causa', categoria: 'FALLAS TRANSFORMADORES'},
+            // Mantenimiento de Transformadores
+            {codigo: 'P300', descripcion: 'Conexión Transformador Nuevo', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P301', descripcion: 'Montaje Desmontaje Equipo Adicional', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P302', descripcion: 'Ponchar Bajante Flojo', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P303', descripcion: 'Cambio De Pararrayos', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P304', descripcion: 'Reposición Línea A Tierra', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P305', descripcion: 'Desmontaje De Transformador', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P306', descripcion: 'Montaje De Transformador', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P307', descripcion: 'Abrir Corta Circuito', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P308', descripcion: 'Cerrar Corta Circuito', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P309', descripcion: 'Cambio De Cortacircuitos', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P310', descripcion: 'Mantenimiento De Transformador', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P311', descripcion: 'Contratista En Baja Tensión', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            {codigo: 'P312', descripcion: 'Otras Causas', categoria: 'MANTENIMIENTO TRANSFORMADORES'},
+            // Fallas Forzadas en Baja Tensión
+            {codigo: 'F350', descripcion: 'Bajante Roto', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F351', descripcion: 'Bajante Quemado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F352', descripcion: 'Bajante Aislado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F353', descripcion: 'Conector Dañado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F354', descripcion: 'Borne Flojo', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F355', descripcion: 'Borne Quemado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F356', descripcion: 'Borne Aislado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F357', descripcion: 'Objetos Sobre La Red', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F358', descripcion: 'Línea En El Suelo', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F359', descripcion: 'Líneas Cruzadas / Destempladas', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F360', descripcion: 'Acometida En Corto', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F361', descripcion: 'Poste Baja Tensión Quebrado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F362', descripcion: 'Fase Aterrizada', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F363', descripcion: 'Totalizador Quemado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F364', descripcion: 'Daño Interno', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F365', descripcion: 'Contador Quemado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F366', descripcion: 'Bornera Del Contador Quemada', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F367', descripcion: 'Neutro Aislado Y/O Roto Acometida', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F368', descripcion: 'Neutro Aislado Y/O Roto De Baja Tensión', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F369', descripcion: 'Neutro Aislado Y/O Roto De Bajantes De Trans', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F370', descripcion: 'Anclaje Energizado', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F371', descripcion: 'Anclaje Roto', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F372', descripcion: 'Línea Subterránea', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F373', descripcion: 'Acercamiento De Línea', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F374', descripcion: 'Puente Roto', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F375', descripcion: 'Particulares En La Red', categoria: 'FALLAS FORZADAS BT'},
+            {codigo: 'F376', descripcion: 'Otra Causa', categoria: 'FALLAS FORZADAS BT'},
+            // Trabajos Sin Salida Circuitos BT
+            {codigo: 'P450', descripcion: 'Mantenimiento Red Aérea', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P451', descripcion: 'Aislar Red De Baja Tensión', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P452', descripcion: 'Reubicación De Línea', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P453', descripcion: 'Retiro De Línea', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P454', descripcion: 'Remodelación De Línea', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P455', descripcion: 'Colocación Separadores', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P456', descripcion: 'Retro Poste De Baja Tensión', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P457', descripcion: 'Reubicación De Poste De Baja Tensión', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P458', descripcion: 'Cambio De Poste De Baja Tensión', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P459', descripcion: 'Retro De Anclaje', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P460', descripcion: 'Conexión Red Aérea Nueva', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P461', descripcion: 'Mantenimiento Red Subterránea', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P462', descripcion: 'Conexión Red Subterránea Nueva', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P463', descripcion: 'Reparación Salida Transformador', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P464', descripcion: 'Remodelación Contratista', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P465', descripcion: 'Reubicación Anclaje', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P466', descripcion: 'Reposición Anclaje', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P467', descripcion: 'Cambio De Acometida', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P468', descripcion: 'Encamisado De Línea', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P469', descripcion: 'Abrir Puente', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P470', descripcion: 'Cerrar Puente', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P471', descripcion: 'Apertura De Huecos', categoria: 'TRABAJOS SIN SALIDA BT'},
+            {codigo: 'P472', descripcion: 'Contratista En La Red', categoria: 'TRABAJOS SIN SALIDA BT'},
+            // Otras Causas Falla MT
+            {codigo: 'O200', descripcion: 'Operaciones Para Localizar Daño', categoria: 'OTRAS CAUSAS MT'},
+            {codigo: 'O201', descripcion: 'Trabajos En Línea Viva', categoria: 'OTRAS CAUSAS MT'},
+            {codigo: 'O202', descripcion: 'Se Reviso Y No Se Encontró Daño', categoria: 'OTRAS CAUSAS MT'},
+            {codigo: 'O203', descripcion: 'Trabajo En Alumbrado Publico', categoria: 'OTRAS CAUSAS MT'},
+            {codigo: 'O204', descripcion: 'Circuito Identificado Incorrecto', categoria: 'OTRAS CAUSAS MT'},
+            {codigo: 'O205', descripcion: 'Otras Causas En Baja Tensión', categoria: 'OTRAS CAUSAS MT'},
+            {codigo: 'O206', descripcion: 'Otras Causas Sin Especificar', categoria: 'OTRAS CAUSAS MT'},
+            // Maniobras en MT
+            {codigo: 'M001', descripcion: 'Abrir Seccionador', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M002', descripcion: 'Cerrar Seccionador', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M003', descripcion: 'Abri Transformador', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M004', descripcion: 'Cerrar Transformador', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M005', descripcion: 'Abrir Seccionador Obc', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M006', descripcion: 'Cerrar Seccionador Obc', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M007', descripcion: 'Abrir Reconectador', categoria: 'MANIOBRAS MT'},
+            {codigo: 'M008', descripcion: 'Cerrar Reconectador', categoria: 'MANIOBRAS MT'},
+            // Fallas en Subestación
+            {codigo: 'F500', descripcion: 'Falla Modulo Transformador 115/13,2 Kv', categoria: 'FALLAS SUBESTACIÓN'},
+            {codigo: 'F501', descripcion: 'Falla Modulo Transformador 115/34,5 Kv', categoria: 'FALLAS SUBESTACIÓN'},
+            {codigo: 'F502', descripcion: 'Falla Modulo Transformador 34,5/13,2 Kv', categoria: 'FALLAS SUBESTACIÓN'},
+            // Trabajos Programados Subestación
+            {codigo: 'P501', descripcion: 'Mto Modulo Transf 115/13,2 Kv', categoria: 'TRABAJOS SUBESTACIÓN'},
+            {codigo: 'P502', descripcion: 'Mto Modulo Transf 115/34,5 Kv', categoria: 'TRABAJOS SUBESTACIÓN'},
+            {codigo: 'P503', descripcion: 'Mto Modulo Transf 34,5/13,2 Kv', categoria: 'TRABAJOS SUBESTACIÓN'}
+        ];
+
+        // Base de datos de materiales (extraídos del PDF)
+        const materiales = [
+            // Cables de la serie 126
+            {codigo: '126101765001', descripcion: 'AMORTIGUADOR STOCKBRIDGE ALUMINIO 1/0AWG CON GRAPA DE SUJECION'},
+            {codigo: '126111703001', descripcion: 'BATERIA LIQUIDA 12V-1000 AMP'},
+            {codigo: '126111707001', descripcion: 'BATERIA 8D VARTA BLUE 1650'},
+            {codigo: '126111711004', descripcion: 'BATERIA TIPO VRLA 12V 100AH LIBRE MANTENIMIENTO'},
+            {codigo: '126111711005', descripcion: 'BATERIA TIPO VRLA 12V 12 AH LIBRE MANTENIMIENTO'},
+            {codigo: '126111711011', descripcion: 'BATERIA TC27 EXTENDED POWER PRECISION - 5200 MAH'},
+            {codigo: '126121519001', descripcion: 'ALAMBRE ALUMINIO AISLADO THWN N.6'},
+            {codigo: '126121540002', descripcion: 'CABLE ACERO GALVANIZADO 3/8\' EXTRA ALTA RESISTENCIA'},
+            {codigo: '126121609001', descripcion: 'CABLE XLPE 4/0 AWG 15KV IL 133% P CINTA'},
+            {codigo: '126121609004', descripcion: 'CABLE XLPE CU 90°C 2/OAWG 15KV 133% PC PVC SR'},
+            {codigo: '126121613001', descripcion: 'CABLE ACSR 1/0AWG RAVEN MONOPOLAR CUBIERTO XLPE/HDPE 15KV 90°C NEGRO/GRIS'},
+            {codigo: '126121613004', descripcion: 'CABLE DE ALUMINIO AISLADO 500 MCM 12 LINEAS'},
+            {codigo: '126121613005', descripcion: 'CABLE DE COBRE 10X14 AWG AISLADO THHN-THWN-2 TC SR'},
+            {codigo: '126121620001', descripcion: 'CABLE CBL-TCSK USB2CA-01'},
+            {codigo: '126121634002', descripcion: 'ALAMBRE COBRE 8AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '126121634003', descripcion: 'ALAMBRE COBRE 8AWG MONOPOLAR AISLADO XLPE 600V 90°C BLANCO'},
+            {codigo: '126121634005', descripcion: 'CABLE COBRE 4/0AWG MONOPOLAR DESNUDO'},
+            {codigo: '126121634006', descripcion: 'CABLE COBRE 2/0AWG MONOPOLAR DESNUDO'},
+            {codigo: '126121634021', descripcion: 'CABLE DE COBRE DUPLEX 2X12 AWG BLANCO'},
+            {codigo: '126121634022', descripcion: 'CABLE DE COBRE DUPLEX 2X16 AWG BLANCO'},
+            {codigo: '126121634028', descripcion: 'CABLE DE COBRE 8 AWG AISLADO THH 600V 90°C BLANCO'},
+            {codigo: '126121634030', descripcion: 'CABLE DE COBRE 8 AWG AISLADO THH 600V 90°C ROJO'},
+            {codigo: '126121634032', descripcion: 'CABLE DE COBRE DUPLEX 2X14 AWG BLANCO'},
+            {codigo: '126121634034', descripcion: 'ALAMBRE DE COBRE AISLADO THHN NO 12 BLANCO'},
+            {codigo: '126121634035', descripcion: 'ALAMBRE DE COBRE AISLADO THHN NO 12 NEGRO'},
+            {codigo: '126121634036', descripcion: 'ALAMBRE DE COBRE AISLADO THHN NO 12 VERDE'},
+            {codigo: '126121644001', descripcion: 'CABLE AAC 750KCMIL PETUNIA MONOPOLAR DESNUDO'},
+            {codigo: '126121644002', descripcion: 'CABLE ACSR 1/0AWG RAVEN MONOPOLAR DESNUDO'},
+            {codigo: '126121644003', descripcion: 'CABLE ACSR 2/0AWG QUAIL MONOPOLAR DESNUDO'},
+            {codigo: '126121644005', descripcion: 'CABLE ACSR 4/0AWG PENGUIN MONOPOLAR DESNUDO'},
+            {codigo: '126121645001', descripcion: 'CABLE DE COBRE 8AWG MONOPOLAR DESNUDO'},
+            {codigo: '126121659001', descripcion: 'CABLE AAC 2/0 AWG. ACSR 1/0AWG CUADRUPLEX AISLADO XLPE 600V 90°C NEUTRO AISLADO NEGRO'},
+            {codigo: '126121659002', descripcion: 'CABLE AAC 3X2 AWG CUADRUPLEX AISLADO XLPE 600V 90°C TREBOL'},
+            {codigo: '126121659004', descripcion: 'CABLE CUADRUPLEX 3X1/0 1/0'},
+            {codigo: '126121659005', descripcion: 'CABLE AAC 2X2AWG AAC 2AWG TRIPLEX AISLADO XLPE 600V 90°C NEUTRO AISLADO NEGRO'},
+            {codigo: '126121662001', descripcion: 'CABLE ALUMINIO AA8000 1X6 GAWG CONCENTRICO AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '126121662002', descripcion: 'CABLE ALUMINIO AA8000 2X6 6AWG CONCENTRICO AISLADO XLPE/XLPE 600V 90°C NEGRO'},
+            {codigo: '126121662003', descripcion: 'CABLE ALUMINI0 AA8000 3X6 GAWG CONCENTRICO AISLADO XLPE/XLPE 600V 90°C NEGRO'},
+            {codigo: '126121662004', descripcion: 'CABLE ALUMINI0 AA8000 4/0AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '126121662005', descripcion: 'CABLE ALUMINIO AISLADO AA8000 6AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '126121662007', descripcion: 'CABLE ACOMETIDA 1X6 6'},
+            {codigo: '126121662008', descripcion: 'CABLE ALUMINIO AA8000 2AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '126121662009', descripcion: 'CABLE ALUMINIO AISLADO 6 NEGRO'},
+            {codigo: '126121665001', descripcion: 'CABLE AAC 2X1/0AWG AAC 123.3KCMIL TRIPLEX AISLADO XLPE/XLPE 600V 90°C'},
+            {codigo: '126121818001', descripcion: 'CABLE IULMINACION # 10 105" NEGRO (AUTOMOVIL)'},
+            {codigo: '126101404001', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.11'},
+            {codigo: '126101404002', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.21'},
+            {codigo: '126101404003', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.10'},
+            {codigo: '126101404004', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.13'},
+            {codigo: '126101404005', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.15'},
+            {codigo: '126101404006', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.16'},
+            {codigo: '126101404007', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.17'},
+            {codigo: '126101404008', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.19'},
+            {codigo: '126101404009', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.22'},
+            {codigo: '126101404010', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.18'},
+            {codigo: '126101503001', descripcion: 'SELLO DE PRENSA ESTOPA'},
+            {codigo: '126101787002', descripcion: 'JUEGO VALVULAS DE ESCAPE VEHICULAR'},
+            {codigo: '126101787003', descripcion: 'JUEGO VALVULAS DE ADMISSION VEHICULAR'},
+            // Postes serie 130
+            {codigo: '130102901001', descripcion: 'POSTE CONCRETO 12M 1050KGF MONOLITICO'},
+            {codigo: '130102901002', descripcion: 'POSTE CONCRETO 12M 510KGF MONOLITICO'},
+            {codigo: '130102901003', descripcion: 'POSTE CONCRETO 12M 750KGF MONOLITICO'},
+            {codigo: '130102901004', descripcion: 'POSTE CONCRETO 14M 1050KGF MONOLITICO'},
+            {codigo: '130102903001', descripcion: 'POSTE METALICO 10M 510KGF SECCIONADO'},
+            {codigo: '130102903004', descripcion: 'POSTE METALICO 14M 750KGF SECCIONADO'},
+            {codigo: '130102903005', descripcion: 'POSTE METALICO 8M 510KGF SECCIONADO'},
+            {codigo: '130102903006', descripcion: 'POSTE METALICO 12M 750KGF SECCIONADO'},
+            {codigo: '130102906002', descripcion: 'POSTE FIBRA DE VIDRIO 12M 510KGF MONOLITICO'},
+            {codigo: '130102906005', descripcion: 'POSTE FIBRA DE VIDRIO 14M 1050KGF MONOLITICO'},
+            {codigo: '130102906006', descripcion: 'POSTE FIBRA DE VIDRIO 16M 1050KGF MONOLITICO'},
+            {codigo: '130102906008', descripcion: 'POSTE FIBRA DE VIDRIO 8M 510KGF SECCIONADO'},
+            // Serie 131 - Accesorios
+            {codigo: '131151901001', descripcion: 'HEBILLA ACERO INOXIDABLE 3/4\"'},
+            {codigo: '131151901002', descripcion: 'HEBILLA ACERO INOXIDABLE 5/8\"'},
+            {codigo: '131151904001', descripcion: 'AMARRAS PLASTICASDE 20 CMS 100 UNIDADES'},
+            {codigo: '131151904002', descripcion: 'AMARRAS PLASTICAS 10CM PAQUETE X 100UND'},
+            {codigo: '131151904003', descripcion: 'AMARRAS PLASTICAS 30CM PAQUETE X 100 UND'},
+            {codigo: '131151904004', descripcion: 'AMARRAS PLASTICAS 80CM PAQUETE X 100 UND'},
+            {codigo: '131151904005', descripcion: 'AMARRAS PLASTICAS'},
+            {codigo: '131159104007', descripcion: 'AMARRAS PLASTICAS 35CM PAQUETE X 100UND'},
+            {codigo: '131159104008', descripcion: 'AMARRAS PLASTICAS 20CM PAQUETE X100UND NEGRO'},
+            {codigo: '131159104010', descripcion: 'AMARRAS PLASTICAS 55 CM PAQUETE X 100UND'},
+            {codigo: '131161501001', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2\" X 1 1/2\"'},
+            {codigo: '131161501002', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2\" X 6\"'},
+            {codigo: '131161502001', descripcion: 'ESPARRAGO 5/8\" X 10\" GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161502002', descripcion: 'ESPARRAGO 5/8\" X 12\" GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161502003', descripcion: 'ESPARRAGO 5/8\" X 14\" GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161502004', descripcion: 'ESPARRAGO 5/8\" X 8\" GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161520007', descripcion: 'TORNILLO EXAGONAL'},
+            {codigo: '131161522001', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 10\" ABIERTO'},
+            {codigo: '131161522002', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 10\" CERRADO'},
+            {codigo: '131161522003', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 12\" CERRADO'},
+            {codigo: '131161522004', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 4\" CERRADO'},
+            {codigo: '131161522005', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 8\" ABIERTO'},
+            {codigo: '131161522006', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 8\" CERRADO'},
+            {codigo: '131161522008', descripcion: 'TORNILLO, TUERCA Y ARANDELA'},
+            {codigo: '131161531006', descripcion: 'TONNILO MEDIANO PARA TAPABORNERA'},
+            {codigo: '131161531007', descripcion: 'TORNILLOS, TUERCAS, WASA. 10MM'},
+            {codigo: '131161531008', descripcion: 'TORNILLO GRANDE PARA TAPABORNERA'},
+            {codigo: '131161612001', descripcion: 'ESPIGO CORTO PARA AISLADOR TIPO PIN 102 X 1 3/4; X 3/4; ROSCA 1 3/8;2 CRUCETA METALICA'},
+            {codigo: '131161612002', descripcion: 'ESPIGO CORTO PARA AISLADOR TIPO PIN 6£ X 1 1/2£ X 3/4£ ROSCA 1£ CRUCETA METALICA'},
+            {codigo: '131161612003', descripcion: 'ESPIGO EXTREMO POSTE AISLADOR TIPO PIN 508MM ROSCA 1£'},
+            {codigo: '131161612005', descripcion: 'ESPIGO EXTREMO POSTE AISLADOR TIPO POSTE 610MM ROSCA 3/4\''},
+            {codigo: '131161711001', descripcion: 'TUERCA DE OJO ALARGADA ACERO GALVANIZADO 5/8\"'},
+            {codigo: '131161801001', descripcion: 'ARANDELA PRESION 1/2\" ACERO GALVANIZADO'},
+            {codigo: '131161801002', descripcion: 'ARANDELA PRESION 5/8\" ACERO GALVANIZADO'},
+            {codigo: '131161807001', descripcion: 'ARANDELA PLANA CUADRADA 2\" X 2\" X 1/4\" DIAMETRO 5/8\"'},
+            {codigo: '131161807002', descripcion: 'ARANDELA PLANA CUADRADA 4\' X 4\' X 1/4\". DIAMETRO 5/8\"'},
+            {codigo: '131161807003', descripcion: 'ARANDELA PLANA REDONDA 1/2\" ACERO GALVANIZADO'},
+            {codigo: '131161807005', descripcion: 'ARANDELA PLANA REDONDA 5/8\" ACERO GALVANIZADO'},
+            {codigo: '131162107001', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 10\"'},
+            {codigo: '131162107002', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 12\"'},
+            {codigo: '131162107003', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 14\"'},
+            {codigo: '131162107005', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 8\"'},
+            {codigo: '131162107006', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2\" X 1 1/2\"'},
+            {codigo: '131162108001', descripcion: 'BLOQUE DE ANCLAJE DE CONCRETO 300MM X 300MM X 150MM'},
+            {codigo: '131162313001', descripcion: 'KIT PARA MANTENIMIENTO LOCATIVO'},
+            {codigo: '131162404007', descripcion: 'GRAPA ALA SENCILLA DE ACERO 1\''},
+            {codigo: '131162405002', descripcion: 'TENSOR O GRAPA DE ACOMETIDA PARA CABLE CONCENTRICO 2X6'},
+            {codigo: '131162409001', descripcion: 'PASADOR TRAPECIO DE EMBRAGUE'},
+            {codigo: '131162419001', descripcion: 'ESLABON EN U (GRILLETE) 5/8\" FORIADO GALVANIZADO'},
+            {codigo: '131162504002', descripcion: 'BRAZO PARA RETENIDA ACERO TIPO GUITARRA'},
+            {codigo: '131162805001', descripcion: 'GUARDACABO ACERO GALVANIZADO 1/2\"'},
+            {codigo: '131162805002', descripcion: 'GUARDACABO ACERO GALVANIZADO 3/8\"'},
+            {codigo: '131163202002', descripcion: 'CHAVETA'},
+            {codigo: '131163202003', descripcion: 'ARANDELOS CHAVETA HAUSING'},
+            {codigo: '131163202004', descripcion: 'CHAVETAS DE TUERCAS DE PUNTA DE CACHO'},
+            {codigo: '131163209001', descripcion: 'RETEN DE MANZANA DELANTERA'},
+            {codigo: '131163209002', descripcion: 'RETEN MANZANA TRASERA'},
+            {codigo: '131163209003', descripcion: 'JUEGO DE SPLINDER FRONTAL DELANTERO'},
+            {codigo: '131163209004', descripcion: 'TERMINAL BARRA DE DIRECION'},
+            {codigo: '131163209005', descripcion: 'BARRA CORTA DE DIRECCION'},
+            {codigo: '131163209006', descripcion: 'ACOLE DE BARRA SIN FIN'},
+            {codigo: '131171503004', descripcion: 'RODAMIENTOS DE MANZANAS TROQUE DELANTEROS'},
+            {codigo: '131171503005', descripcion: 'RODAMIENTO TRAPECIO DE EMBRAGUE'},
+            {codigo: '131171605002', descripcion: 'BUJE DEL SPLINDER'},
+            {codigo: '131181701001', descripcion: 'EMPAQUETADURA SUPERIOR MOTOR MAN ORIGINAL VEHICULAR'},
+            {codigo: '131201502001', descripcion: 'CINTA ELECTRICA AISLANTE DE VINILO SUPER 33'},
+            {codigo: '131201502002', descripcion: 'CINTA ELECTRICA AISLANTE DE VINILO TEMFL'},
+            {codigo: '131201502006', descripcion: 'CINTA ELECTRICA AISLANTE VINILO TEMFLEX'},
+            {codigo: '131201502008', descripcion: 'CINTA AISLANTE 20 YARDAS NEGRA'},
+            {codigo: '131201510002', descripcion: 'CINTA TEFLON'},
+            {codigo: '131201521001', descripcion: 'CINTA ACERO INOXIDABLE 3/4\"'},
+            {codigo: '131201521002', descripcion: 'CINTA BANDIT 5/8\"'},
+            {codigo: '131201534001', descripcion: 'CINTA AUTOFUNDENTE'},
+            {codigo: '131201623004', descripcion: 'ADHESIVO DE CONTACTO BOXER'},
+            {codigo: '131411704002', descripcion: 'SELLO DE CAUCHO ORRING'},
+            {codigo: '131161910001', descripcion: 'RESORTES ZAPATA FRENO'},
+            // Accesorios serie 132
+            {codigo: '132151707001', descripcion: 'TARIETA REGULADORA MX321 CUMMINS'},
+            {codigo: '132151904002', descripcion: 'CABLE COBRE 4X12AWG CONTROL APANTALLADO AISLADO XLPE/XLPE 600V 90°C GRIS'},
+            {codigo: '132151904003', descripcion: 'CABLE DE CONTROL MULTICONDUCTOR APANTALLADO CALIBRE 4X 12 AEG'},
+            {codigo: '132151904004', descripcion: 'CABLE DE CONTROL MULTICONDUCTOR APANTALLADO CALIBRE 8X 12 AWG'},
+            {codigo: '132151904010', descripcion: 'CABLE DE CONTROL APANTALLADO 4X 12 AWG'},
+            {codigo: '132151904011', descripcion: 'CABLE DE CONTROL APANTALLADO 7X 12 AWG'},
+            // Medidores serie 139
+            {codigo: '139101605007', descripcion: 'REFLECTOR LED 200W 6000K'},
+            {codigo: '139101605008', descripcion: 'REFLECTOR LED 200W LUZ BLANCA SYLVANIA'},
+            {codigo: '139111603002', descripcion: 'LUMINARIA LED ALUMBRADO PUBLICO 150W 5700K C/ FOTO'},
+            {codigo: '139111616001', descripcion: 'PORTALAMPARA DE CAUCHO TIPO INTEMPERIE'},
+            {codigo: '139121010001', descripcion: 'BOBINA 6600 V 765 AMP CLASE H VPI Y ACCESORIOS'},
+            {codigo: '139121115001', descripcion: 'GABINETE METALICO C/PUERTA Y CHAPA 80*70*25 DOBLE BARRAJE TETRAFILAR 2F,1N 1 TIERRA DE 80 AMPERIOS TRANSFERENCIA ELECTROMECANICA (RED-PLANTA)'},
+            {codigo: '139121116001', descripcion: 'TABLERO MONOFASICO 2 CIRCUITOS'},
+            {codigo: '139121116003', descripcion: 'TABLERO MONO 2CTOS 75A BM S/P C/BLA'},
+            {codigo: '139121116004', descripcion: 'TABLERO MONOFÁSICO DE SOBREPONER CON ESPACIO PARA 3 CIRCUITOS 75 AMP'},
+            {codigo: '139121303001', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR MONOFASICO 120VCA SIN CORTE'},
+            {codigo: '139121303002', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR MONOFASICO 120VCA SIN CORTE'},
+            {codigo: '139121303003', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
+            {codigo: '139121332001', descripcion: 'CAJA DE DERIVACION DE ACOMETIDA 3 FASES DE 4 SALIDAS 1 NEUTRO DE 4 SALIDAS BARRAJE DE 140A RESORTADO'},
+            {codigo: '139121332002', descripcion: 'CAJA DE DERIVACION DE ACOMETIDA 3 FASES DE 9 SALIDAS 1 NEUTRO DE 9 SALIDAS BARRAJE DE 140A RESORTADO'},
+            {codigo: '139121402007', descripcion: 'TOMA CORRIENTE DOBLE P/T 125VCA 20A S/TAPA'},
+            {codigo: '139121402013', descripcion: 'TOMA DOBLE P/T GALICA 2 BLANCO'},
+            {codigo: '139121405002', descripcion: 'TERMINALES 500 MCM'},
+            {codigo: '139121409003', descripcion: 'CONECTOR PERFORACION AISLAMIENTO 4-2/0AWG A 4-2/0AWG'},
+            {codigo: '139121409004', descripcion: 'CONECTOR PERFORACION AISLAMIENTO 4-2/0AWG A 8-2AWG'},
+            {codigo: '139121409005', descripcion: 'CONECTOR PERFORACION AISLAMIENTO 2-4/0AWG A 2-4/0AWG'},
+            {codigo: '139121409008', descripcion: 'CONECTOR DE PERFORACION 2-2/0 AWG'},
+            {codigo: '139121409009', descripcion: 'CONECTOR DE PERFORACION 1/0 A 300KCMIL'},
+            {codigo: '139121409010', descripcion: 'CONECTOR DE PERFORACION 1/0 A 30/0AWG'},
+            {codigo: '139121409014', descripcion: 'CONECTOR DE PERFORACION TORN. CHAQ.AISL 2/0-2 P2X-95'},
+            {codigo: '139121409018', descripcion: 'CONECTOR PERFORACION AISLIMENTO 8-4/0AWG A 16-10AWG CDP-6'},
+            {codigo: '139121409024', descripcion: 'BORNA ISBARRI LARGO COBRE ESTANADO DE UN HUECO 250KCMIL'},
+            {codigo: '139121409025', descripcion: 'CONECTOR DE EMPALME PARA CABLE AAAC 312,8 KCMIL'},
+            {codigo: '139121409026', descripcion: 'CONECTOR DE EMPALME PARA CABLE AAAC 246,9 KCMIL'},
+            {codigo: '139121409029', descripcion: 'BORNA TERMINAL CU2/0 AWG B/LARGO KUALI'},
+            {codigo: '139121409030', descripcion: 'BORNA TERMINAL CU2/0 AWG B/LARGO KUALI'},
+            {codigo: '139121409031', descripcion: 'BORNA TERMINAL CU3/0 AWG B/LARGO KUALI'},
+            {codigo: '139121409032', descripcion: 'BORNA TERMINAL CU4/0 AWG B/LARGO KUALI'},
+            {codigo: '139121424001', descripcion: 'TAPABORNERA EN POLICARBONATO PARA MEDIDOR MONOFASICO'},
+            {codigo: '139121432002', descripcion: 'TERMINALES TIPO PIN CABLE 10 AWG'},
+            {codigo: '139121432003', descripcion: 'TERMINALES TIPO PIN CABLE 12 AWG'},
+            {codigo: '139121432004', descripcion: 'TERMINALES TIPO PIN CABLE 14 AWG'},
+            {codigo: '139121432005', descripcion: 'TERMINALES TIPO ANILLO CABLE 10 AWG'},
+            {codigo: '139121432006', descripcion: 'TERMINALES TIPO ANILLO CABLE 12 AWG'},
+            {codigo: '139121432007', descripcion: 'TERMINALES TIPO HERRADURA CABLE 10 AWG'},
+            {codigo: '139121432008', descripcion: 'TERMINALES TIPO HERRADURA CABLE 12 AWG'},
+            {codigo: '139121432009', descripcion: 'TERMINALES TIPO FAST ON HEMBRA 12 AWG'},
+            {codigo: '139121432010', descripcion: 'TERMINALES EMPALME CABLE 10 AWG'},
+            {codigo: '139121432011', descripcion: 'TERMINALES EMPALME CABLE 12 AWG'},
+            {codigo: '139121455003', descripcion: 'TERMINALES PREMOLEADOS TIPO EXTERIOR 35 KV RANGO 3/0 A 500MCM 3M'},
+            {codigo: '139121534004', descripcion: 'BOMBILLO PILOTOS LED ROJO DE 24MM 120 VDC'},
+            {codigo: '139121534005', descripcion: 'BOMBILLO PILOTOS LED VERDE DE 24MM 120VDC'},
+            {codigo: '139121534006', descripcion: 'BOMBILLO PILOTOS LED ROJO DE 24 MM 24 VDC'},
+            {codigo: '139121534007', descripcion: 'BOMBILLO PILOTOS LED VERDE DE 24 MM 24 VDC'},
+            {codigo: '139121601003', descripcion: 'BREAKER DE CIRCUITO X 40 AMP'},
+            {codigo: '139121601005', descripcion: 'BREAKER DE CIRCUITO X 20 AMP'},
+            {codigo: '139121601008', descripcion: 'BREAKER MONO ENCH 20A 10KA 120/240V'},
+            {codigo: '139121601009', descripcion: 'BREAKER MONO ENCH 40A 10KA 120/240V'},
+            {codigo: '139121601002', descripcion: 'BREACKER MONOPOLAR ENCHUFE DE 30AMP'},
+            {codigo: '139121607001', descripcion: 'EXTENSION RED TRENZADA PERCHA DE 50 CM'},
+            {codigo: '139121613001', descripcion: 'KIT SPT ACERO INOXIDABLE BAJA TENSION'},
+            {codigo: '139121613002', descripcion: 'KIT SPT ACERO INOXIDABLE MEDIA TENSION'},
+            {codigo: '139121613004', descripcion: 'CONECTOR DE PUESTA A TIERRA COBRE TIPO UN TORNILLO PARA VARILLA 5/8\''},
+            {codigo: '139121613007', descripcion: 'KIT RETIE BASICO SIN CAJA DE INSPECCION'},
+            {codigo: '139121613008', descripcion: 'KIT SPT ACERO INOXIDABLE BAJA TENSION S/VARILLA'},
+            {codigo: '139121613009', descripcion: 'KIT MEDIDOR Y ELEMENTOS RETIE CON CAJA DE INSPECCIÓN'},
+            {codigo: '139121613012', descripcion: 'VARILLA PUESTA A TIERRA COBRE 5/8\' X 2400MM'},
+            {codigo: '139121626003', descripcion: 'FUSIBLE EXPLUTION 100A TIPO K 15KV'},
+            {codigo: '139121626004', descripcion: 'FUSIBLE EXPLUTION 100A TIPO K 38KV'},
+            {codigo: '139121626005', descripcion: 'FUSIBLE EXPLUTION 10A TIPO K 15KV'},
+            {codigo: '139121626006', descripcion: 'FUSIBLE EXPLUTION 10A TIPO K 38KV'},
+            {codigo: '139121626008', descripcion: 'FUSIBLE EXPLUTION 13A TIPO H 15KV'},
+            {codigo: '139121626009', descripcion: 'FUSIBLE EXPLUTION 14A TIPO H 15KV'},
+            {codigo: '139121626010', descripcion: 'FUSIBLE EXPLUTION 150A TIPO H 15KV'},
+            {codigo: '139121626011', descripcion: 'FUSIBLE EXPLUTION 150A TIPO K 15KV'},
+            {codigo: '139121626012', descripcion: 'FUSIBLE EXPLUTION 150A TIPO K 38KV'},
+            {codigo: '139121626013', descripcion: 'FUSIBLE EXPLUTION 15A TIPO K 15KV'},
+            {codigo: '139121626014', descripcion: 'FUSIBLE EXPULSION 1A TIPO K 15KV'},
+            {codigo: '139121626015', descripcion: 'FUSIBLE EXPLUTION 200A TIPO H 15KV'},
+            {codigo: '139121626016', descripcion: 'FUSIBLE EXPLUTION 20A TIPO K 15KV'},
+            {codigo: '139121626017', descripcion: 'FUSIBLE EXPLUTION 25A TIPO H 38KV'},
+            {codigo: '139121626018', descripcion: 'FUSIBLE EXPLUTION 25A TIPO K 15KV'},
+            {codigo: '139121626019', descripcion: 'FUSIBLE EXPULSION 2A TIPO D 15KV'},
+            {codigo: '139121626020', descripcion: 'FUSIBLE EXPULSION 2A TIPO K 15KV'},
+            {codigo: '139121626021', descripcion: 'FUSIBLE EXPLUTION 2A TIPO K 38KV'},
+            {codigo: '139121626022', descripcion: 'FUSIBLE EXPULSION 3.1A TIPO D 15KV'},
+            {codigo: '139121626023', descripcion: 'FUSIBLE EXPULSION 30A TIPO K 15KV'},
+            {codigo: '139121626024', descripcion: 'FUSIBLE EXPULSION 30A TIPO K 38KV'},
+            {codigo: '139121626025', descripcion: 'FUSIBLE EXPULSION 3A TIPO K 38KV'},
+            {codigo: '139121626026', descripcion: 'FUSIBLE EXPULSION 4.2A TIPO DUAL 15KV'},
+            {codigo: '139121626027', descripcion: 'FUSIBLE EXPULSION 40A TIPO K 15KV'},
+            {codigo: '139121626028', descripcion: 'FUSIBLE EXPULSION 45A TIPO H 15KV'},
+            {codigo: '139121626029', descripcion: 'FUSIBLE EXPULSION 45A TIPO K 15KV'},
+            {codigo: '139121626031', descripcion: 'FUSIBLE EXPULSION 4A TIPO K 38KV'},
+            {codigo: '139121626032', descripcion: 'FUSIBLE EXPULSION 5.2A TIPO DUAL 15KV'},
+            {codigo: '139121626033', descripcion: 'FUSIBLE EXPULSION 50A TIPO K 15KV'},
+            {codigo: '139121626034', descripcion: 'FUSIBLE EXPULSION 50A TIPO K 38KV'},
+            {codigo: '139121626035', descripcion: 'FUSIBLE EXPULSION 5A TIPO K 38KV'},
+            {codigo: '139121626036', descripcion: 'FUSIBLE EXPULSION 6.3A TIPO DUAL 15KV'},
+            {codigo: '139121626037', descripcion: 'FUSIBLE EXPULSION 60A TIPO H 15KV'},
+            {codigo: '139121626038', descripcion: 'FUSIBLE EXPULSION 60A TIPO K 15KV'},
+            {codigo: '139121626039', descripcion: 'FUSIBLE EXPULSION 7.8A TIPO DUAL 15KV'},
+            {codigo: '139121626041', descripcion: 'FUSIBLE EXPULSION 80A TIPO K 15KV'},
+            {codigo: '139121626042', descripcion: 'FUSIBLE EXPULSION 90A TIPO H 15KV'},
+            {codigo: '139121626043', descripcion: 'FUSIBLE EXPULSION 90A TIPO K 15KV'},
+            {codigo: '139121626044', descripcion: 'FUSIBLE EXPULSION 9A TIPO DUAL 15KV'},
+            {codigo: '139121626046', descripcion: 'FUSIBLE EXPULSION 70A TIPO K 15KV'},
+            {codigo: '139121626047', descripcion: 'FUSIBLE EXPULSION 3A TIPO D 15KV'},
+            {codigo: '139121626048', descripcion: 'FUSIBLE EXPULSION 3A TIPO K 15KV'},
+            {codigo: '139121626049', descripcion: 'FUSIBLE EXPULSION SA TIPO K 15KV'},
+            {codigo: '139121626050', descripcion: 'FUSIBLE EXPULSION 6A TIPO K 15KV'},
+            {codigo: '139121626051', descripcion: 'FUSIBLE EXPULSION BA TIPO K 15KV'},
+            {codigo: '139121626052', descripcion: 'FUSIBLE EXPULSION 65A TIPO K 15KV'},
+            {codigo: '139121626053', descripcion: 'FUSIBLE EXPULSION TIPO K 0,5 15KV'},
+            {codigo: '139121626054', descripcion: 'FUSIBLE EXPULSION TIPO K 4A 15KV'},
+            {codigo: '139121626055', descripcion: 'FUSIBLE'},
+            {codigo: '139121626056', descripcion: 'FUSIBLE EXPULSION 8A TIPO D 15KV'},
+            {codigo: '139121626057', descripcion: 'FUSIBLE EXPULSION 8A TIPO V5 15KV'},
+            {codigo: '139121626058', descripcion: 'FUSIBLE EXPULSION 7A TIPO D 15KV'},
+            {codigo: '139121626059', descripcion: 'FUSIBLE EXPULSION 25A TIPO K 38KV'},
+            {codigo: '139121626060', descripcion: 'FUSIBLE EXPULSION 5A TIPO V5 15KV'},
+            {codigo: '139121626061', descripcion: 'FUSIBLE EXPULSION 65A TIPO H 15KV'},
+            {codigo: '139121626062', descripcion: 'FUSIBLE EXPULSION 4A TIPO DUAL VS 15KV'},
+            {codigo: '139121626063', descripcion: 'FUSIBLE EXPULSION 85A TIPO K 15KV'},
+            {codigo: '139121626064', descripcion: 'FUSIBLE EXPULSION 4A TIPO D 15KV'},
+            {codigo: '139121633001', descripcion: 'INTERRUPTOR SENCILLO 120/250V 10A'},
+            {codigo: '139121634001', descripcion: 'DPS TIPO DISTRIBUTION POLIMERICO OXIDO DE ZINC 12KV 10KA'},
+            {codigo: '139121634002', descripcion: 'DPS TIPO DISTRIBUTION POLIMÉRICO OXIDO DE ZINC 30KV 10KA'},
+            {codigo: '139121634004', descripcion: 'DPS TIPO DISTRIBUTION POLIMÉRICO OXIDO DE ZINC 34KV 10KA'},
+            {codigo: '139121634005', descripcion: 'DPS TIPO DISTRIBUTION POLIMÉRICO OXIDO DE ZINC 36KV 10KA'},
+            {codigo: '139121634006', descripcion: 'DPS TIPO DISTRIBUCION POLIMÉRICO OXIDO DE ZINC 30KV 10KA'},
+            {codigo: '139121634007', descripcion: 'DPS TIPO DISTRIBUCION POLIMÉRICO OXIDO DE ZINC 34KV 10KA'},
+            {codigo: '139121634008', descripcion: 'DPS TIPO DISTRIBUCION POLIMÉRICO OXIDO DE ZINC 36KV 10KA'},
+            {codigo: '139121634009', descripcion: 'KIT SPT ACERO INOXIDABLE BAJA TENSION'},
+            {codigo: '139121634010', descripcion: 'KIT SPT ACERO INOXIDABLE MEDIA TENSION'},
+            {codigo: '139121638001', descripcion: 'CORTACIRCUITO MONOPOLAR 100A 15KV 12KA'},
+            {codigo: '139121638002', descripcion: 'CORTACIRCUITO MONOPOLAR 100A 15KV CON CAMARA 12KA'},
+            {codigo: '139121638003', descripcion: 'CORTACIRCUITO MONOPOLAR 100A 38KV 8KA'},
+            {codigo: '139121638004', descripcion: 'CORTACIRCUITO MONOPOLAR 200A 15KV 12KA'},
+            {codigo: '139121638005', descripcion: 'CORTACIRCUITO MONOPOLAR 200A 15KV CON CAMARA 12KA'},
+            {codigo: '139121638006', descripcion: 'CORTACIRCUITO MONOPOLAR 200A 38KV 8KA'},
+            {codigo: '139121638007', descripcion: 'CORTACIRCUITO MONOPOLAR 100A 15KV CON CAMARA 12KA'},
+            {codigo: '139121638008', descripcion: 'CORTACIRCUITO MONOPOLAR 100A 38KV 8KA'},
+            {codigo: '139121638009', descripcion: 'CORTACIRCUITO MONOPOLAR 200A 15KV 12KA'},
+            {codigo: '139121638010', descripcion: 'CORTACIRCUITO MONOPOLAR 200A 15KV CON CAMARA 12KA'},
+            {codigo: '139121638011', descripcion: 'CORTACIRCUITO MONOPOLAR 200A 38KV 8KA'},
+            {codigo: '139121638012', descripcion: 'CORTACIRCUITO MONOPOLAR 100A 15KV CON CAMARA 12KV'},
+            {codigo: '139121701001', descripcion: 'EXTENSION RED TRENZADA PERCHA DE 50 CM'},
+            {codigo: '139121701002', descripcion: 'PERCHA 1 PUESTO ACERO GALVANIZADO'},
+            {codigo: '139121701003', descripcion: 'PERCHA 3 PUESTOS ACERO GALVANIZADO'},
+            {codigo: '139121701005', descripcion: 'PERCHA ACERO GALVANIZADO 2 PUESTOS'},
+            {codigo: '139121701006', descripcion: 'PERCHA ACERO GALVANIZADO 4 PUESTOS'},
+            {codigo: '139121705001', descripcion: 'GRAPA DE RETENCION ALUMINIO GALVANIZADO EN CALIENTE TIPO PISTOLA 3UES 2AWG-266.8MCM'},
+            {codigo: '139121705002', descripcion: 'GRAPA DE RETENCION ALUMINIO RECTA 4AWG-2/0AWG'},
+            {codigo: '139121705003', descripcion: 'GRAPA DE RETENCION ALUMINIO TIPO PISTOLA 1/0AWG A 4/0AWG'},
+            {codigo: '139121705004', descripcion: 'GRAPA DE RETENCION ALUMINIO TIPO PISTOLA 2/0AWG A 4/0AWG'},
+            {codigo: '139121705005', descripcion: 'GRAPA DE RETENCION ALUMINIO GALVANIZADO EN CALIENTE TIPO PISTOLA 2UES 6AWG-2/0 AWG'},
+            {codigo: '139121705007', descripcion: 'GRAPA DE SUSPENSION RED TRENZADA 4AWG-2/0AWG'},
+            {codigo: '139121705008', descripcion: 'GRAPA OPERACIÓN CALIENTE ALUMINIO 4AWG-2/0AWG'},
+            {codigo: '139121705009', descripcion: 'GRAPA PRENSORA 2 TORNINLOS CABLE 1/4\' A 3/8\' PLATINA 1 1/2\' X 4\''},
+            {codigo: '139121705010', descripcion: 'GRAPA PRENSORA 3 TORNINLOS CABLE 1/4\' A 3/8\' PLATINA 1 1/2\' X 6\''},
+            {codigo: '139121705011', descripcion: 'GRAPA PRENSORA 3 TORNINLOS CABLE 1/4\' A 3/8\' PLATINA 1 1/2\' X 4\''},
+            {codigo: '139121705019', descripcion: 'GRAPA RET. T/RECTO 2UES 6-2/0 AWG AL'},
+            {codigo: '139121721001', descripcion: 'AISLADOR CARRETE PORCELANA 0.6KV 3\' ANSI C29.3 CLASE 53-2'},
+            {codigo: '139121721002', descripcion: 'AISLADOR PIN DOBLE PORCELANA 38KV 10 1/2\' ANSI C29.6 CLASE 56-3'},
+            {codigo: '139121721003', descripcion: 'AISLADOR PIN PORCELANA 15KV 5 1/2\' ANSI C29.5 CLASE 55-4'},
+            {codigo: '139121721004', descripcion: 'AISLADOR SUSPENSION POLIMERICO 15KV ANSI C29.13 CLASE DS-15 CLEVIS-LENGUETA'},
+            {codigo: '139121721005', descripcion: 'AISLADOR SUSPENSION POLIMERICO 38KV ANSI C29.13 CLASE DS-35 CLEVIS-LENGUETA'},
+            {codigo: '139121721006', descripcion: 'AISLADOR SUSPENSION PORCELANA 48KV 10 3/4\' ANSI C29.2 CLASE 52-4 CLEVIS-LENGÜETA'},
+            {codigo: '139121721007', descripcion: 'AISLADOR TENSOR PORCELANA 0.6KV 3 1/2\' ANSI C29.4 CLASE 54-1'},
+            {codigo: '139121721009', descripcion: 'AISLADOR TENSOR PORCELANA 0.6KV 3 1/2\' ANSI C29.4 CLASE 54-1'},
+            {codigo: '139121721010', descripcion: 'AISLADOR TENSOR PORCELANA 15KV 4 1/4\' ANSI C29.4 CLASE 54-2'},
+            {codigo: '139121721011', descripcion: 'AISLADOR TENSOR PORCELANA 38-48KV 6 3/4\' ANSI C29.4 CLASE 54-4'},
+            {codigo: '139121722001', descripcion: 'ALAMBRE EN ACERO GALVANIZADO CALIBRE 12'},
+            {codigo: '139122106001', descripcion: 'COLLARIN 1400M (5 1/2") DOS SALUDAS'},
+            {codigo: '139122106002', descripcion: 'COLLARIN 160MM (6\') DOS SALIDAS'},
+            {codigo: '139122106003', descripcion: 'COLLARIN 160MM (6\') UNA SALIDA'},
+            {codigo: '139122106004', descripcion: 'COLLARIN 180MM (7\') DOS SALIDA'},
+            {codigo: '139122106005', descripcion: 'COLLARIN 180MM (7\') UNA SALIDA'},
+            {codigo: '139122106006', descripcion: 'COLLARIN 200MM (8\') DOS SALUDAS'},
+            {codigo: '139122106007', descripcion: 'COLLARIN 200MM (8\') UNA SALIDA'},
+            {codigo: '139122106008', descripcion: 'COLLARIN 220MM (9\') DOS SALIDA'},
+            {codigo: '139122106009', descripcion: 'COLLARIN 220MM (9\') UNA SALIDA'},
+            {codigo: '139122106010', descripcion: 'COLLARIN 250MM (10\') DOS SALUDAS'},
+            {codigo: '139122106013', descripcion: 'COLLARIN PARA TRANSFORMADOR DE 180MM'},
+            {codigo: '139122106014', descripcion: 'COLLARIN PARA TRANSFORMADOR DE 220MM'},
+            {codigo: '139122106015', descripcion: 'COLLARIN PARA TRANSFORMADOR 250MM'},
+            {codigo: '139122108001', descripcion: 'VARILLA DE ANCLAJE 5/8\' X 1500MM'},
+            {codigo: '139122108002', descripcion: 'VARILLA DE ANCLAJE 5/8\' X 1800MM'},
+            {codigo: '139122108003', descripcion: 'VARILLA PUESTA A TIERRA 1.8M X 5/8 EN ACERO'},
+            {codigo: '139122113001', descripcion: 'CRUCETA METALICA 1500MM 2 1/2\' X 2 1/2\' X 3/16\''},
+            {codigo: '139122113002', descripcion: 'CRUCETA METALICA 2000MM 2 1/2\' X 2 1/2\' X 3/16\''},
+            {codigo: '139122113003', descripcion: 'CRUCETA METALICA 2400MM 2 1/2\' X 2 1/2\' X 1/4\''},
+            {codigo: '139122113004', descripcion: 'CRUCETA METALICA 2400MM 2 1/2\' X 2 1/2\' X 3/16\''},
+            {codigo: '139122113005', descripcion: 'CRUCETA METALICA 3000MM 3\'3X31/4\''},
+            {codigo: '139122113006', descripcion: 'CRUCETA METALICA 4000MM 3\'3X31/4\''},
+            {codigo: '139122113007', descripcion: 'CRUCETA METALICA 6000MM 3\' X 3\' X 1/4\''},
+            {codigo: '139122113010', descripcion: 'DIAGONAL METALICA RECTA 1 1/2\'X1 1/2X3/16\' 680MM'},
+            {codigo: '139122113011', descripcion: 'DIAGONAL METALICA RECTA 1/2 X 1/2 X 3/16 1500MM'},
+            {codigo: '139122113012', descripcion: 'DIAGONAL METALICA RECTA 1 1/2\'X1 1/2X3/16\' 1100MM'},
+            {codigo: '139122248001', descripcion: 'INTERRUPTOR DE TENSION NOMINAL 34.5 KV CORRIENTE NOMINAL 1.250 AMPERIOS MANDO 125 VCC'},
+            {codigo: '139122248002', descripcion: 'INTERRUPTOR DE TENSION NOMINAL 34.5 KV CORRIENTE NOMINAL 1.250 AMPERIOS MANDO 24 VCC'},
+            {codigo: '139122248003', descripcion: 'INTERRUPTOR DE TENSION VN 145 KV IN 3150 A MARCA TAIKAI REF: LW30-145 TIPO EXTERIOR'},
+            {codigo: '139122301001', descripcion: 'RELE BUCHHOLZ DN80'},
+            {codigo: '139131607002', descripcion: 'CORDON O CORREA DE AMARRE PARA CABLES X 20CM'},
+            // Medidores serie 141
+            {codigo: '141104213001', descripcion: 'KIT TOMA DE MUESTRAS ACEITE DIELECTRICO'},
+            {codigo: '141104213002', descripcion: 'AGUA DESMINERALIZADA DE 550CC'},
+            {codigo: '141105204001', descripcion: 'KIT TOMA DE MUESTRAS ACEITE DIELECTRICO'},
+            {codigo: '141111957001', descripcion: 'SENSOR PRESION ACEITE'},
+            {codigo: '141112212001', descripcion: 'TERMOMETRO DE DEVANADO CON SONDA RECUBIERTA EN ACERO INOXIDABLE MESSKO COMPACT'},
+            {codigo: '141112212002', descripcion: 'TERMOMETRO PARA MEDIDA DE TEMPERATURA DE ACEITE CON SONDA EN ACERO INOXIDABLE MESSKO COMPACT'},
+            {codigo: '141112213001', descripcion: 'TERMOMETRO FLUKE 51-2 CON SONDA PARA INMERSION 80 PK-22 Y CALIBRE DEL TERMOMETRO'},
+            {codigo: '141113630001', descripcion: 'MULTIMETRO 48X96 DE 1-500V 100-200VAC MT4WAV4N'},
+            {codigo: '141113725001', descripcion: 'MEDIDOR INTELIGENTE TRIFASICO TETRAFILAR MOD I310-b1 3X120/208V 10/80A 60Hz 3F-4H'},
+            {codigo: '141113725005', descripcion: 'MEDIDOR ELECTRONICO MONOFASICO MOD I210-B1 120V 5(80)A 60HZ 1F-2H'},
+            {codigo: '141113637001', descripcion: 'CUSTOMER INTERFACE UNIT MODEL: CIF-WL2 (OBIS) 5.0V 0.2A'},
+            // Lubricantes serie 115
+            {codigo: '115121502001', descripcion: 'ADHESIVO DE CONTACTO BOXER'},
+            {codigo: '115121514002', descripcion: 'LUBRICANTE INDUSTRIAL CRC 2-26 GRADO ELECTRICO (BOTE EN SPRAY)'},
+            {codigo: '115121514003', descripcion: 'LUBRICANTE INDUSTRIAL CRC 3-36 (BOTE EN SPRAY)'},
+            {codigo: '115121514006', descripcion: 'LUBRICANTE GRAFITO MOLIBDENO X 430 ML'},
+            {codigo: '115121520001', descripcion: 'ACEITE LUBRICANTE 25W50 VALVOLINE'},
+            {codigo: '115121520002', descripcion: 'ACEITE LUBRICANTE 25W50 TERPEL'},
+            {codigo: '115121520003', descripcion: 'ACEITE LUBRICANTE 25W60 VALVOLINE'},
+            {codigo: '115121520004', descripcion: 'ACEITE LUBRICANTE DE MOTOR 20W60'},
+            {codigo: '115121520005', descripcion: 'ACEITE LUBRICANTE DE MOTOR 15W40'},
+            {codigo: '115121527003', descripcion: 'ACEITE LUBRICANTE 25W-60'},
+            {codigo: '115121527004', descripcion: 'ACEITE LUBRICANTE 25W50 MARCA VALVODIESEL (TAMBOR X 55 GALONES)'},
+            {codigo: '115121527005', descripcion: 'ACEITE LUBRICANTE 25W60 MARCA VALVODIESEL (TAMBOR X 55 GALONES)'},
+            {codigo: '115121527006', descripcion: 'ACEITE LUBRICANTE MONOGRADO SAE 40, SAE 30'},
+            {codigo: '115121802001', descripcion: 'ADITIVO ZEREX ZEDRU1 VALVOLINE'},
+            {codigo: '115121802002', descripcion: 'ADITIVO REFRIGERANTE ZEREX'},
+            {codigo: '115121902001', descripcion: 'GRASA MULTIPROPOSITO VALVOLINE'},
+            {codigo: '115121902002', descripcion: 'GRASA MULTIPROPOSITO TIMKEN'},
+            {codigo: '115121902003', descripcion: 'TUBO DE GRASA BALIT COMPLEX ROSHFRANS'},
+            {codigo: '115121920024', descripcion: 'GRASA BALIT'},
+            {codigo: '124111802001', descripcion: 'TANQUE DE GAS RECLOSER'},
+            {codigo: '124131513001', descripcion: 'REFRIGERANTE ZEREX'},
+            // Accesorios vehiculares serie 125
+            {codigo: '125151904005', descripcion: 'CABLE DE CONTROL MULTICONDUCTOR APANTALLADO CALIBRE 4X 10 AWG'},
+            {codigo: '125151910001', descripcion: 'CINTA TEFLON'},
+            {codigo: '125171502001', descripcion: 'JUEGO DE PLUMILLAS'},
+            {codigo: '125171502002', descripcion: 'BRAZO PLUMILLA'},
+            {codigo: '125171502003', descripcion: 'SOPORTE EJE PLUMILLA'},
+            {codigo: '125171708002', descripcion: 'DISCO DE FRENO DELANTERO'},
+            {codigo: '125171708003', descripcion: 'DISCO DE FRENO'},
+            {codigo: '125171708005', descripcion: 'PASTILLAS DE FRENO DELANTERO IIK153'},
+            {codigo: '125171708006', descripcion: 'PASTILLAS DE FRENO TRASERAS IIK153'},
+            {codigo: '125171708009', descripcion: 'PASTILLAS DE FRENO DELANTERO OAK302'},
+            {codigo: '125171708010', descripcion: 'PASTILLA DE FRENO NOVEX'},
+            {codigo: '125171710001', descripcion: 'PIE DE APoyo CILINDO PRUMA'},
+            {codigo: '125171713003', descripcion: 'PASTILLAS DE FRENO DELANTERO OAK249'},
+            {codigo: '125171713004', descripcion: 'PASTILLAS DE FRENO TRASERAS OAK249'},
+            {codigo: '125171713007', descripcion: 'JUEGO DE SELLOS GUARDAPOLVOS MORDAZA DELANTEROS'},
+            {codigo: '125171713008', descripcion: 'JUEGO DE SELLOS GUARAPOLVOS MORDAZA TRASEROS'},
+            {codigo: '125171713009', descripcion: 'PASTILLAS DE FRENO DELANTERO OAK302'},
+            {codigo: '125171713010', descripcion: 'PASTILLA DE FRENO NOVEX'},
+            {codigo: '125171714001', descripcion: 'CAMPANA DE FRENO VEHICULAR'},
+            {codigo: '125171718002', descripcion: 'BOMBA DE FRENO PRINCIPAL'},
+            {codigo: '125171721003', descripcion: 'VALVULA DE FRENO TRASERO'},
+            {codigo: '125171725001', descripcion: 'JUEGO DE BANDA DE FRENO VEHICULAR'},
+            {codigo: '125171781001', descripcion: 'SIEMBRA MORDAZA FRENO DELANTERO'},
+            {codigo: '125172002001', descripcion: 'SOPORTE CAJA DE CAMBIOS'},
+            {codigo: '125172002002', descripcion: 'ROTULA INFERIOR'},
+            {codigo: '125172002003', descripcion: 'ROTULA INFERIOR'},
+            {codigo: '125172002004', descripcion: 'RODAJA DE ZAPATAS FRENO'},
+            {codigo: '125172002005', descripcion: 'AMORTIGUADOR DELANTERO'},
+            {codigo: '125172002006', descripcion: 'SOPORTE MOTOR VEHICULO COMPLETOS'},
+            {codigo: '125172009001', descripcion: 'BUJE AMORTIGUADOR CAUCHO'},
+            {codigo: '125172405002', descripcion: 'BITURBO BORGWARNER VEHICULAR'},
+            {codigo: '125172405003', descripcion: 'JUEGO SELLOS ARANDELA INJECTOR VEHICULAR'},
+            {codigo: '125172503001', descripcion: 'LLANTA 7.50 R 16 TRASERA'},
+            {codigo: '125172503002', descripcion: 'LLANTA 7.50 R 16 DELANTERA'},
+            {codigo: '125172504001', descripcion: 'LLANTA 215/75 R17.5 X2E2 TL'},
+            {codigo: '125172504002', descripcion: 'LANTA 215/75 R17.5 X2U3 DIR TL'},
+            {codigo: '125172504003', descripcion: 'LLANTAS 275/80 R22.5 DELANTERA'},
+            {codigo: '125172504008', descripcion: 'LLANTA 245/70 R16 BF GOODRICH ALL TERRAIN KO2'},
+            {codigo: '125172504009', descripcion: 'LLANTA 700 R16 MICHELIN'},
+            {codigo: '125172504011', descripcion: 'LLANTA 295/80 R 22.5 DELANTERA'},
+            {codigo: '125172504012', descripcion: 'LLANTA 295/80 R 22.5 TRASERA'},
+            {codigo: '125172509001', descripcion: 'NEUMATICO NO 16'},
+            {codigo: '125172509002', descripcion: 'PROTECTORES NO. 16'},
+            {codigo: '125172802007', descripcion: 'KIT SELLOS GATO DE ELEVACION Y ARTICULAC'},
+            {codigo: '125172802021', descripcion: 'COMMANDO HIDRAULICO DE WINCHE PLUMA'},
+            {codigo: '125172802022', descripcion: 'SOPORTE BASE TANQUE DEL HIDRAULICO'},
+            {codigo: '125172901001', descripcion: 'AMPOLLETA DE FRENO'},
+            {codigo: '125172901002', descripcion: 'BOMBILLO STOP'},
+            {codigo: '125172901003', descripcion: 'BOMBILLO DE DIRECCIAL'},
+            {codigo: '125172901004', descripcion: 'LAMINA SOPORTE STOP VEHICULAR'},
+            {codigo: '125172907004', descripcion: 'BOMBILLOS ALOJENOS MEDIA'},
+            {codigo: '125172907005', descripcion: 'BOMBILLOS DE ALTAS'},
+            {codigo: '125172907006', descripcion: 'LAMPARA VEHICULAR DELANTERA IZQUIERDA COMPLETA'},
+            {codigo: '125173807001', descripcion: 'GUARAPOLVO AXIAL'},
+            {codigo: '125173811001', descripcion: 'BALINES PUNTA EJE'},
+            {codigo: '125173812001', descripcion: 'CONJUNTO EMBRAGUE (DISCO, PRENSA, BALINERA)'},
+            {codigo: '125173812002', descripcion: 'VARILLA DE EMBRAGUE'},
+            {codigo: '125173815001', descripcion: 'CHAVETA GUAYA DE CAMBIOS'},
+            {codigo: '125173815002', descripcion: 'GUAYA SELECTOR CAMBIOS VEHICULAR'},
+            {codigo: '125173821002', descripcion: 'HORQUILLA SISTEMA MECANICO DE EMBRAGUE'},
+            {codigo: '125173902001', descripcion: 'ARRANQUE CUMMINS KT450'},
+            {codigo: '125173902002', descripcion: 'ARRANQUE STEWART STEVENSON'},
+            {codigo: '125173902003', descripcion: 'ARRANQUE CUMMINS QST30'},
+            {codigo: '125173903002', descripcion: 'RACOR PASAMURO DE 1/4'},
+            {codigo: '125174006001', descripcion: 'MANGUERA DE RADIADOR'},
+            {codigo: '125174216001', descripcion: 'BARRAS AXIALES DE DIRECCION'},
+            {codigo: '125174216002', descripcion: 'BARRA CORTA DE DIRECCION'},
+            {codigo: '125174706001', descripcion: 'RACHE FRENO TRASERO'},
+            {codigo: '125174808001', descripcion: 'KIT DE REPUESTOS Y ACCESORIOS PARA VEHICULOS'},
+            {codigo: '125174808002', descripcion: 'KIT DE REPUESTOS PARA ACCESORIOS PARA VEHICULOS (A)'},
+            {codigo: '125174808003', descripcion: 'KIT DE REPUESTOS PARA ACCESORIOS PARA VEHICULOS (B)'},
+            {codigo: '125174808004', descripcion: 'KIT DE REPUESTOS PARA ACCESORIOS PARA VEHICULOS (C)'},
+            {codigo: '125172503001', descripcion: 'LLANTA 7.50 R 16 TRASERA'},
+            {codigo: '125172503002', descripcion: 'LLANTA 7.50 R 16 DELANTERA'},
+            // Serie 140 - Filtros y Tuberías
+            {codigo: '140141652001', descripcion: 'VALVULA DE SOBREPRESION PARA TRANSFORAMDOR DE POTENCIA'},
+            {codigo: '140142020002', descripcion: 'MANGUERA 1/2 CON ACOPLES HIDRAULICA 1M'},
+            {codigo: '140142020003', descripcion: 'CODO DE MANGUERA DEL HIDRAULICO 1/2'},
+            {codigo: '140142020004', descripcion: 'MANGUERA 1 1/2'},
+            {codigo: '140142020005', descripcion: 'MANGUERA 1 2/2 CON ACOPLES PARA HIDRAULICA 1/2'},
+            {codigo: '140161501001', descripcion: 'FILTO TRAMPA WF10005 WIX'},
+            {codigo: '140161501002', descripcion: 'FILTRO TRAMPA PF7680 BALWIN'},
+            {codigo: '140161502001', descripcion: 'FILTRO DE AGUA WF2071'},
+            {codigo: '140161502003', descripcion: 'FILTRO DE AGUA 24071 WIX'},
+            {codigo: '140161504001', descripcion: 'FILTRO DE ACEITE P551670'},
+            {codigo: '140161504002', descripcion: 'FILTRO ACEITE -WIX (51970MP)'},
+            {codigo: '140161504003', descripcion: 'FILTRO DE ACEITE LF14000NN'},
+            {codigo: '140161504004', descripcion: 'FILTO DE ACEITE P550777 DONALSON'},
+            {codigo: '140161504005', descripcion: 'FILTO DE ACEITE LF777 FLEETGUARD'},
+            {codigo: '140161504006', descripcion: 'FILTRO DE ACEITE 51749 WIX'},
+            {codigo: '140161504007', descripcion: 'FILTRO DE ACEITE 51970 WIX'},
+            {codigo: '140161504008', descripcion: 'FILTO DE ACEITE P559000 DONALSON'},
+            {codigo: '140161504009', descripcion: 'FILTO DE ACEITE 57746XD WIX'},
+            {codigo: '140161504010', descripcion: 'FILTO DE ACEITE FLEETGUARD 1R0726'},
+            {codigo: '140161504013', descripcion: 'FILTRO DE ACEITE FLEETGUARD 180726'},
+            {codigo: '140161505001', descripcion: 'FILTRO DE AIRE P181099'},
+            {codigo: '140161505002', descripcion: 'FILTRO DE AIRE AF26207 DONALSON'},
+            {codigo: '140161505003', descripcion: 'FILTRO DE AIRE P781098'},
+            {codigo: '140161505005', descripcion: 'FILTO DE AIRE R54629 BALWIN'},
+            {codigo: '140161505006', descripcion: 'FILTO DE AIRE P181099 FLEETGUARD'},
+            {codigo: '140161508001', descripcion: 'FILTRO RACOR PF7890'},
+            {codigo: '140161508002', descripcion: 'FILTRO SEPARADOR (FS1006)'},
+            {codigo: '140161508003', descripcion: 'FILTRO SEPARADOR P552020'},
+            {codigo: '140161513002', descripcion: 'FILTRO DE COMBUSTIBLE P550220'},
+            {codigo: '140161513003', descripcion: 'FILTO DE COMBUSTIBLE P552203 DONALSON'},
+            {codigo: '140161513005', descripcion: 'FILTO DE COMBUSTIBLE P552006 DONALSON'},
+            {codigo: '140161513006', descripcion: 'FILTO DE COMBUSTIBLE 1R0756/P551317'},
+            {codigo: '14016157013', descripcion: 'TUBO SCH 40 1/2 X 3 M'},
+            {codigo: '14017157010', descripcion: 'TERMINAL CONECTOR SCH 40 1/2'},
+            {codigo: '140171571007', descripcion: 'CAJA 2X4 PLASTICA GRIS SCH 40'},
+            {codigo: '140171571008', descripcion: 'CAJA PLASTICA OCTOGONAL SCH 40 GRIS'},
+            {codigo: '140171571009', descripcion: 'CURVA SCH 40 PVC 1/2'},
+            {codigo: '140171571010', descripcion: 'TERMINAL CONECTOR SCH 40 1/2'},
+            {codigo: '140171571011', descripcion: 'TUBO EMT 1/2X3M'},
+            {codigo: '140171571012', descripcion: 'TERMINAL EMT 1/2'},
+            {codigo: '140171706002', descripcion: 'TARJETA DOTACIÓN PARA PERSONAL MASCULINO'},
+            {codigo: '140171814001', descripcion: 'ANCHETA DE DULCES HALLOWEEN'},
+            {codigo: '140172610001', descripcion: 'ACOLE RAPIDO PARA AIRE 1/2'},
+            {codigo: '140172610005', descripcion: 'ACOLE RAPIDO PARA AIRE'},
+            {codigo: '141106706001', descripcion: 'TARJETA DOTACIÓN PARA PERSONAL MASCULINO'},
+            // Accesorios serie 146
+            {codigo: '146181526001', descripcion: 'CAMISA OPERARIO-TECNICO MASCULINO COLOR AZUL MANGA LARGA VARIAS TALLAS'},
+            {codigo: '146181526002', descripcion: 'CAMISA PROTECTORA EN ALGODON VARIAS TALLAS'},
+            {codigo: '146181528001', descripcion: 'TRAIES ANTIDERRAMES PARA MANEJO DE SUSTANCIAS QUIMICAS'},
+            {codigo: '146181540003', descripcion: 'GUANTES REVESTIDOS EN POLIURETANO G40 PU FLEX'},
+            {codigo: '146181543003', descripcion: 'CHAQUETA EN ALGODON 100%'},
+            {codigo: '146182002004', descripcion: 'MASCARA MEDIA CARA GASES ORGANICOS'},
+            // Serie 147
+            {codigo: '147131821001', descripcion: 'DESENGRASANTE BIODEGRADABLE H-7 CUÊTE DE 5 GALONES REF: 7000005'},
+            {codigo: '147131825001', descripcion: 'MAT 88 LIMPIADOR DE EQUIPOS ELECTRICOS'},
+            // Accesorios serie 150
+            {codigo: '150161532001', descripcion: 'BOMBA DE COMBUSTIBLE CUMMINS KT450'},
+            {codigo: '15121501001', descripcion: 'ACEITE PARA MOTORES 2 TIEMPOS MEZCLA 50:1'},
+            {codigo: '15121527001', descripcion: 'ACEITE LUBRICANTE PARA CHUMACERAS SHELL TURBINE 68 (TAMBOR X 55 GALONES)'},
+            {codigo: '15121527002', descripcion: 'ACEITE LUBRICANTE PARA CHUMACERAS SHELL TURBINE 46 (TAMBOR X 55 GALONES)'},
+            {codigo: '152141504002', descripcion: 'ESTUFA ELECTRICA DE DOS BOCAS'},
+            {codigo: '153101502001', descripcion: 'PANTALON PARA HOMBRE CON LOGOTIPO EN TELA INDIGO VARIAS TALLAS'},
+            {codigo: '153141507001', descripcion: 'BROCHE PARA CARTERA DE PUERTA DE VEHICULO'},
+            {codigo: '153181526001', descripcion: 'CAMISA OPERARIO-TECNICO MASCULINO COLOR AZUL MANGA LARGA VARIAS TALLAS'},
+            {codigo: '155121503002', descripcion: 'ADHESIVOS DE VERIFICATION USUARIOS CON MEDIDOR DE ENERGIA DIRECTA'},
+            {codigo: '155121503003', descripcion: 'ADHESIVOS DE VERIFICATION USUARIOS CON MEDIDOR DE ENERGIA DIRECTA Y SEMIDIRECTA'},
+            // Polipastos serie 224
+            {codigo: '224101608005', descripcion: 'POLIPASTO MANUAL DE PALANCA 2T -5/M MOD 72A CARGA POR CABLE'},
+            // Medidores serie 226
+            {codigo: '226111601001', descripcion: 'RADIADOR INTERCOOLER TANQUE DE NIVELACIÓN DE FABRICACIÓN NACIONA'},
+            {codigo: '226111601002', descripcion: 'KIT DE EMPAQUETADURA DE MOTOR CUMMINS KT450'},
+            {codigo: '226111601003', descripcion: 'KIT DE EMPAQUETADURA DE MOTOR STEWART STEVENSON'},
+            {codigo: '226111601004', descripcion: 'KIT DE EMPAQUETADURA DE MOTOR CUMMINS QST30'},
+            {codigo: '226101302001', descripcion: 'ALTERNADOR CUMMINS KT450'},
+            {codigo: '226101302002', descripcion: 'ALTERNADOR STEWART STEVENSON'},
+            {codigo: '226101302003', descripcion: 'ALTERNADOR CUMMINS QST30'},
+            {codigo: '226101402001', descripcion: 'ACOPLES PLASTICOS'},
+            {codigo: '226101402002', descripcion: 'ACOPLES DE HIERRO'},
+            {codigo: '226101740001', descripcion: 'INYECTORES'},
+            {codigo: '226102906007', descripcion: 'POSTE FIBRA DE VIDRO 8M 510KGF MONOLITICO'},
+            {codigo: '226111601001', descripcion: 'RADIADOR INTERCOOLER TANQUE DE NIVELACIÓN DE FABRICACIÓN NACIONA'},
+            {codigo: '226121540001', descripcion: 'CABLE ACERO GALVANIZADO 1/4\" EXTRA ALTA RESISTENCIA'},
+            {codigo: '226121540002', descripcion: 'CABLE ACERO GALVANIZADO 3/8\" EXTRA ALTA RESISTENCIA'},
+            {codigo: '226121613001', descripcion: 'CABLE ACSR 1/0AWG RAVEN MONOPOLAR CUBIERTO XLPE/HDPE 15KV 90°C NEGRO/GRIS'},
+            {codigo: '226121644001', descripcion: 'CABLE AAC 750KCMIL PETUNIA MONOPOLAR DESNUDO'},
+            {codigo: '226121644002', descripcion: 'CABLE ACSR 1/0AWG RAVEN MONOPOLAR DESNUDO'},
+            {codigo: '226121644003', descripcion: 'CABLE ACSR 2/0AWG QUALI MONOPOLAR DESNUDO'},
+            {codigo: '226121644004', descripcion: 'CABLE ACSR 2AWG SPARROW MONOPOLAR DESNUDO'},
+            {codigo: '226121644005', descripcion: 'CABLE ACSR 4/0AWG PENGUIIN MONOPOLAR DESNUDO'},
+            {codigo: '226121659001', descripcion: 'CABLE AAC 2/0 AWG + ACSR 1/0AWG CUADRUPLEX AISLADO XLPE 600V 90°C NEUTRO AISLADO NEGRO'},
+            {codigo: '226121659002', descripcion: 'CABLE AAC 3X2 AWG CUADRUPLEX AISLADO XLPE 600V 90°C TREBOL'},
+            {codigo: '226121662001', descripcion: 'CABLE ALUMINI0 AA8000 1X6+6AWG CONCENTRICO AISLADO XLPE 600V/XLPE 600V 90°C NEGRO'},
+            {codigo: '226121662002', descripcion: 'CABLE ALUMINI0 AA8000 2/0AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '226121662003', descripcion: 'CABLE ALUMINI0 AA8000 2X6+6AWG CONCENTRICO AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '226121662004', descripcion: 'CABLE ALUMINI0 AA8000 4/0AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '226121662005', descripcion: 'CABLE ALUMINI0 AA8000 6AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
+            {codigo: '226121665001', descripcion: 'CABLE AAC 2X1/0AWG + AAC 123.3KCMIL TRIPLEX AISLADO XLPE/XLPE 600V 90°C'},
+            {codigo: '226121813001', descripcion: 'SECCIONADOR MONOPOLAR APERTURAL CENTRAL MONTAJE HORIZONTAL 800A 36KV 25KA 1000M CON MANDO MANUAL EN CUCHILLA'},
+            {codigo: '226121813002', descripcion: 'SECCIONADOR MONOPOLAR DE APERTURA CENTRAL MONTAJE HORIZONTAL 600A 36KV 25KA 1000M CON CUCHILLA DE PUESTA A TIERRA'},
+            {codigo: '226121813003', descripcion: 'SECCIONADOR MONOPOLAR DE COLUMNA GIRATORIA MONTAJE VERTICAL 600A 36KV 25KA 1000M CON CUCHILLA DE PUESTA A TIERRA'},
+            {codigo: '226121813004', descripcion: 'SECCIONADOR MONOPOLAR DE COLUMNA GIRATORIA MONTAJE VERTICAL 800A 36KV 25KA 1000M CON MANDO MANUAL EN CUCHILLA'},
+            {codigo: '226121813005', descripcion: 'SECCIONADOR TAIKAI GW4-252/2500, EXT. 220 KV, MÁX 245 KV, BIL 1050 KV, 1500 A, 40 KA (1 S), IP 104 KA, FUGA 31 MM/KV, ALTURA 3000 MSNM, TIPO APERTURA CEN'},
+            {codigo: '226121813006', descripcion: 'SECCIONADOR TRIPOLAR DOBLE APERTURAL LATERAL 1250A 123KV 550KV 31.5KA/15 80KA PICO SIN CUCHILLA DE PUESTA A TIERRA'},
+            {codigo: '226121831007', descripcion: 'SECCIONADOR DE APERTURA CEN CUCHILLAS DE PUESTA A TIERRA MONTAJE HORIZONTAL (MONTAJE 4) INOM=1250A, VNOM=123KV, ICC=25KA. MANDO MOTORIZADO EN CUCHILLAS PRINCIPALES, MANDO MANUAL EN CUCHILLAS 2.5N.M 1000M'},
+            {codigo: '226121831008', descripcion: 'SECCIONADOR DE APERTURA CENTRAL MONTAJE HORIZONTAL (MONTAJE 4) INOM=1250A, VNOM=123KV, ICC=25KA. MANDO MOTORIZADO EN CUCHILLAS PRINCIPALES. TENSIÓN DE CONTROL A 125VDC. ALTURA A 1100M'},
+            {codigo: '226121831009', descripcion: 'SECCIONADOR APERTURA CENTRAL CON CUCHILLAS DE PUESTA A TIERRA PARA MONTAJE 3 VERTICAL (MONTAJE 3) INOM=600A, VNOM=36KV, ICC=25KA. MANDO MANUAL EN CUCHILLAS PRINCIPALES. TENSIÓN DE CONTROL A 125VDC. ALTURA M.S.N.M > 1000M'},
+            {codigo: '226121831010', descripcion: 'SECCIONADOR DE APERTURA CENTRAL PARA MONTAJE 4 HORIZONTAL (MONTAJE 4) INOM=600A, VNOM=36KV, ICC=25KA. MANDO MANUAL EN CUCHILLAS PRINCIPALES. MANDO MANUAL EN CUCHILLAS DE PUESTA A TIERRA MONTAJE 4.5N.M 1000M'},
+            {codigo: '226121831011', descripcion: 'SECCIONADOR DE APERTURA CENTRAL PARA MONTAJE 4 HORIZONTAL (MONTAJE 4) INOM=800A, VNOM=36KV, ICC=25KA. MAN DO NEN CUCHILLAS TENSIÓN DE CONTROL A 125VDC. ALTURA M.S.N.M > 1000M'},
+            {codigo: '226131814001', descripcion: 'DESCARGADOR SOBRETENSION 96KV 20KA DPS POLIMERICO OXIDO DE ZINC MONOPOLAR'},
+            {codigo: '226131832007', descripcion: 'SECCIONADOR DE APERTURA CEN CUCHILLAS DE PUESTA A TIERRA MONTAJE HORIZONTAL'},
+            // Accesorios serie 227
+            {codigo: '227121604001', descripcion: 'KIT DE PISTONES Y CAMISAS CUMMINS KT450'},
+            {codigo: '227121604002', descripcion: 'KIT DE PISTONES Y CAMISAS STEWART STEVENSON'},
+            {codigo: '227121604003', descripcion: 'KIT DE PISTONES Y CAMISAS CUMMINS QST30'},
+            // Serie 230
+            {codigo: '230102901001', descripcion: 'POSTE CONCRETO 12M 1050KGF MONOLITICO.'},
+            {codigo: '230102901002', descripcion: 'POSTE CONCRETO 12M 510KGF MONOLITICO'},
+            {codigo: '230102901003', descripcion: 'POSTE CONCRETO 12M 750KGF MONOLITICO'},
+            {codigo: '230102901004', descripcion: 'POSTE CONCRETO 14M 1050KGF MONOLITICO'},
+            {codigo: '230102901005', descripcion: 'POSTE CONCRETO 8M 510KGF MONOLITICO'},
+            {codigo: '230102903001', descripcion: 'POSTE METALICO 10M 510KGF SECCIONADO'},
+            {codigo: '230102903002', descripcion: 'POSTE METALICO 12M 510KGF SECCIONADO'},
+            {codigo: '230102903003', descripcion: 'POSTE METALICO 14M 1050KGF SECCIONADO'},
+            {codigo: '230102903004', descripcion: 'POSTE METALICO 14M 750KGF SECCIONADO'},
+            {codigo: '230102903005', descripcion: 'POSTE METALICO 8M 510KGF SECCIONADO'},
+            {codigo: '230102903006', descripcion: 'POSTE METALICO 12M 750KGF SECCIONADO'},
+            {codigo: '230102906002', descripcion: 'POSTE FIBRA DE VIDRIO 12M 510KGF MONOLITICO'},
+            {codigo: '230102906003', descripcion: 'POSTE FIBRA DE VIDRIO 12M 510KGF SECCIONADO'},
+            {codigo: '230102906004', descripcion: 'POSTE FIBRA DE VIDRIO 12M 750KGF MONOLITICO'},
+            {codigo: '230102906005', descripcion: 'POSTE FIBRA DE VIDRIO 14M 1050KGF MONOLITICO'},
+            {codigo: '230102906006', descripcion: 'POSTE FIBRA DE VIDRIO 16M 1050KGF MONOLITICO'},
+            {codigo: '230102906008', descripcion: 'POSTE FIBRA DE VIDRIO 8M 510KGF SECCIONADO'},
+            {codigo: '230102906009', descripcion: 'POSTE FIBRA DE VIDRIO 12M 750KHF SECCIONADO'},
+            {codigo: '230102906010', descripcion: 'POSTE FIBRA DE VIDRIO 10M 510KHF SECCIONADO'},
+            {codigo: '230102906016', descripcion: 'POSTE FIBRA DE VIDORIO 14M 1050G6F SECCIONADO'},
+            {codigo: '230102921001', descripcion: 'ESCALERA SENCILLA DE 5 PASOS AISLADA 2.7M'},
+            {codigo: '230121001004', descripcion: 'TRANSFORMADOR 2F 50KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            // Transformadores serie 239
+            {codigo: '239121001001', descripcion: 'TRANSFORMADOR 2F 10KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001003', descripcion: 'TRANSFORMADOR 2F 15KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001005', descripcion: 'TRANSFORMADOR 1F 10KVA 7620V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001006', descripcion: 'TRANSFORMADOR 1F 15KVA 7620V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001007', descripcion: 'TRANSFORMADOR 1F 5KVA 7620V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001008', descripcion: 'TRANSFORMADOR 2F 15KVA 34500V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001009', descripcion: 'TRANSFORMADOR 2F 25KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001010', descripcion: 'TRANSFORMADOR 2F 25KVA 34500V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001011', descripcion: 'TRANSFORMADOR 2F 50KVA 34500V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001012', descripcion: 'TRANSFORMADOR 2F 5KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001013', descripcion: 'TRANSFORMADOR 3F 15KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001014', descripcion: 'TRANSFORMADOR 3F 30KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001015', descripcion: 'TRANSFORMADOR 3F 45KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001016', descripcion: 'TRANSFORMADOR 3F 75KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001017', descripcion: 'TRANSFORMADOR 3F 75KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001018', descripcion: 'TRANSFORMADOR 2F 37.5KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001019', descripcion: 'TRANSFORMADOR 3F 112.5KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001020', descripcion: 'TRANSFORMADOR REPARADO 2F 15KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001021', descripcion: 'TRANSFORMADOR REPARADO 2F 25KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001022', descripcion: 'TRANSFORMADOR REPARADO 2F 37.5KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001023', descripcion: 'TRANSFORMADOR REPARADO 2F 50KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001024', descripcion: 'TRANSFORMADOR REPARADO 3F 30KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001025', descripcion: 'TRANSFORMADOR REPARADO 3F 45KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001026', descripcion: 'TRANSFORMADOR REPARADO 3F 75KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001027', descripcion: 'TRANSFORMADOR REPARADO 3F 15KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001028', descripcion: 'TRANSFORMADOR REPARADO 3F 112.5KVA 13200V 220-127V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121001031', descripcion: 'TRANSFORMADOR REPARADO 2F 10KVA 13200V 240-120V CONVENCIONAL ACEITE MINERAL'},
+            {codigo: '239121008001', descripcion: 'UNIDAD CONCENTRADORADE DATOS'},
+            {codigo: '239121008002', descripcion: 'CONCENTRADOR ZIV MOD 4CCT-EAD-33B14CBB'},
+            {codigo: '239121008003', descripcion: 'CONCENTRADOR INHEMETER INH MOD IHM-4000'},
+            {codigo: '239121008004', descripcion: 'CONCENTRADOR INHEMETER INH MOD IHM-4000 PLC'},
+            {codigo: '239121033002', descripcion: 'TRANSFORMADOR DE POTENCIAL 0.5 KVA'},
+            {codigo: '239121033003', descripcion: 'TRANSFORMADOR DE POTENCIAL 0.5 KVA 34.5/0, 120 KV. USO EXTERIOR'},
+            {codigo: '239121033004', descripcion: 'TRANSFORMADOR DE POTENCIAL (TENSION PRIMARIA (KV):13.2, TENSION SECUNDARIA (V):120, TENSION DE SERVICIO (V): 13200/3:15'},
+            {codigo: '239121304001', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO OPACA'},
+            {codigo: '239121552001', descripcion: 'MODULO SIM EQUIPOS DE TELEOPERACION'},
+            {codigo: '239121570001', descripcion: 'RECONECTADOR TRIFASICO 15KV 800A'},
+            {codigo: '239121570002', descripcion: 'RECONECTADOR NOVA 38 KV, BIL 170/200 KV, FUGAS 1156/1559 MM, ARCOS 394/331 MM, PRUEBAS 60/70 KV, 60 HZ, 800 A, 16 KA, PICO 41.6 KA'},
+            {codigo: '239121570003', descripcion: 'RECONECTADOR TRIFASICO 15KV 630A'},
+            {codigo: '239121621001', descripcion: 'DESCARGADOR ZNO POLIMÉRICO CL 3, 36 KV, UC 28.8 KV, 10 KA (8/20 £5), EXT ENE'},
+            {codigo: '239121632001', descripcion: 'RELES DE PROTECCION DE LINEAS 115KV'},
+            {codigo: '239122202001', descripcion: 'INTERUMPTOR SECTIONADOR TIPO BASCULANTE TRIPOLAR 5BC 630A 36KV'},
+            {codigo: '239122248001', descripcion: 'INTERRUPTOR DE TENSION NOMINAL 34.5 KV CORRIENTE NOMINAL 1.250 AMPERIOS MANDO 125 VCC'},
+            {codigo: '239122248002', descripcion: 'INTERRUPTOR DE TENSION NOMINAL 34.5 KV CORRIENTE NOMINAL 1.250 AMPERIOS MANDO 24 VCC'},
+            {codigo: '239122248003', descripcion: 'INTERRUPTOR DE TENSION VN 145 KV IN 3150 A MARCA TAIKAI REF: LW30-145 TIPO EXTERIOR'},
+            {codigo: '239121032003', descripcion: 'TRANSFORMADOR DE CORRIENTE TIPO EXTERIOR MOD TCV TENSION MAX SERVICIO (UM) 0,72 KV FREC 50-60HZ'},
+            {codigo: '239121304001', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO OPACA'},
+            // Medidores serie 240
+            {codigo: '240141652001', descripcion: 'VALVULA DE SOBREPRESION PARA TRANSFORAMDOR DE POTENCIA'},
+            {codigo: '240151532001', descripcion: 'BOMBA DE COMBUSTIBLE CUMMINS KT450'},
+            {codigo: '240151532002', descripcion: 'BOMBA DE COMBUSTIBLE STEWART STEVENSON'},
+            {codigo: '240151532003', descripcion: 'BOMBA DE COMBUSTIBLE CUMMINS QST30'},
+            // Medidores serie 241
+            {codigo: '241103327001', descripcion: 'MACROMEDIDOR: MEDIDOR DE MEDIDA SEMIDIRECTA DE ENERGIA ACTIVA Y REACTIVA, CON MODEM Y ANTENA DE COMUCACION'},
+            {codigo: '241111931001', descripcion: 'SENSOR DE MINIMA DE TANQUE DE REFRIGERANTE'},
+            {codigo: '241113624001', descripcion: 'MEDIDOR AISLAMIENTO 12KV 35 TERA OHM KYORITSU'},
+            {codigo: '241113709001', descripcion: 'MEDIDOR ELECTRONICO BIFASICO TRIFILAR MOD AMT B1E-OR2TI 2X120/208V 5(100)A 60HZ 2F-3H'},
+            {codigo: '241113709002', descripcion: 'MEDIDOR ELECTRONICO MONOFASICO BIFILAR MOD DDS26D 120V (5100)A 60HZ 1F-2H'},
+            {codigo: '241113709003', descripcion: 'MEDIDOR ELECTRONICO TRIFASICO MOD ETM34 3X120/208V 5(100)A 60HZ 3F-4H'},
+            {codigo: '241113709004', descripcion: 'MEDIDOR DE ENERGIA TRON/ACTARIS MODELO SL7000 CLASE 0,25 ACTIVA'},
+            {codigo: '241113708004', descripcion: 'KIT MEDIDOR ELECTRONICO MONOFASICO MOD 1210-B1 120V 5(80)A 60HZ 1F-2H CAJA EN POLICARBONATO'},
+            {codigo: '241113708005', descripcion: 'MEDIDOR ELECTRONIC TRIFASICO MOD DTZ5153 31X100V-3X240V 5(100)A 60HZ 3F-4H'},
+            {codigo: '241113637001', descripcion: 'CUSTOMER INTERFACE UNIT MODEL: CIF-WL2 (OBIS) 5.0V 0.2A'},
+            {codigo: '241113637002', descripcion: 'PATRON PORTATIL ZERA MT310 PARA ANALISIS MEDIDORES ENERGIA'},
+            // Medidores serie 243
+            {codigo: '243211715004', descripcion: 'TERMINAL MÓVIL ZEBRA TC26 SERIES'},
+            {codigo: '24321175003', descripcion: 'TERMINAL MOVIL HONEYWELL EDA51 CON CARGADOR Y BATERIA'},
+            {codigo: '24321175006', descripcion: 'TERMINAL MOIVI ZEBRA TC27 SERIES'},
+            {codigo: '243222610002', descripcion: 'SWITCH INDUSTRIAL EKI-7720E-4F-AE 4SFP PORT MANAGED ETHERNET SWITCH PUERTO RJ45'},
+            {codigo: '243222610003', descripcion: 'SWITCH INDUSTRIAL EKI-7712E-4F-AE: 8FE 4SFP PORT MANAGED ETHERNET SWITCH PUERTO RJ45'},
+            {codigo: '243222610004', descripcion: 'CONVERSOR INDUSTRIAL BB-VESP211 ETHERNET-SERIAL'},
+            {codigo: '243222628001', descripcion: 'MODEM INHEMETER RF MODULE SRFD1-03 TRFD1-02'},
+            {codigo: '243222628002', descripcion: 'MODEM INHEMETER 4G I210-1322-1310-IT30'},
+            {codigo: '2431412506001', descripcion: 'CAJA DE ACOMETIDA 3F X 9 USUARIOS'},
+            {codigo: '2431412506002', descripcion: 'CAJA DE ACOMETIDA 3F X 4 USUARIOS'},
+            // Medidores serie 256
+            {codigo: '256101522002', descripcion: 'SILLA INTERLOCUTORA ASIENTO Y ESPALDAR FIOS EN POLIPROPILENO TAPIZADO EN SILVERTEX 4 PATAS ESTRUCTURA COLOR NEGRO'},
+            // Medidores serie 326
+            {codigo: '326121540001', descripcion: 'CABLE ACERO GALVANIZADO 1/4\" EXTRA ALTA RESISTENCIA'},
+            // Medidores serie 339
+            {codigo: '339121304001', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR MONOFASICO 120VCA SIN CORTE'},
+            {codigo: '339121304002', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
+            {codigo: '339121304003', descripcion: 'CAIA HERMETICA POLIMÉRICA PARA MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
+            {codigo: '339121304004', descripcion: 'CAJA POLICARONATO P/MEDIDOR MONOFÁSICO TRANSPARENTE TAPA C/VISOR VIDRIO SIN SUBTAPA NI PORTA BREAKER SIN HERRAJES CINTA BAND BORNERA DE Tierra Hexagonal Y Tornillo Triangular GALVANIZADO M14-T00-12'},
+            {codigo: '339121304005', descripcion: 'CAJA DE POLICARONATO PARA MEDIDOR POLIFÁSICO, TRANSPARENTE, TAPA PLANA CON VISOR, SIN SUBTAPA NI PORTA BREAKER, BORNERA DE Tierra Hexagonal Y Cierre Tapa-base Triangular P15-100-12'},
+            {codigo: '339121613001', descripcion: 'KIT SPT ACERO INOXIDABLE BAJA TENSION'},
+            {codigo: '339121613006', descripcion: 'KIT RETIE BASICO'},
+            {codigo: '339121613008', descripcion: 'KIT RETIE BASICO MAS MEDIDOR Y CAJA'},
+            {codigo: '339121613009', descripcion: 'KIT MEDIDOR Y ELEMENTOS RETIE CON CAJA DE INSPECCIÓN'},
+            // Medidores serie 341
+            {codigo: '341113708004', descripcion: 'MEDIDOR ELECTRONICO TRIFASICO MOD HXE34K 3X120/208V 5(100)A 60HZ 3F-4H'},
+            {codigo: '341113708005', descripcion: 'KIT MEDIDOR ELECTRONICO BIFASICO MOD 1322-b0 2X120/208V 10(80)A 60HZ 2F-3H CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
+            {codigo: '341113708006', descripcion: 'KIT MEDIDOR ELECTRONICO TRIFASICO MOD 1310-81 3X120/208V 10(80)A 60HZ 3F-4H CAJA EN POLICARBONATO CON CORTE'},
+            {codigo: '341113708007', descripcion: 'KIT MEDIDOR ELECTRONICO MONOFASICO MOD 120-b1 120V 5(80)A 60HZ 1F-2H CAJA EN POLICARBONATO CON CORTE'},
+            {codigo: '341113708008', descripcion: 'KIT MEDIDOR ELECTRONICO MONOFASICO MOD 120-b1 120V 5(80)A 60HZ 1F-2H CAJA HERMETICA POLIMERICA PARA MEDIDOR MONOFASICO 120VCA SIN CORTE'},
+            {codigo: '341113708010', descripcion: 'MEDIDOR ELECTRONICO BIFASICO MOD 1322-b0 2X120/208V 10(80)A 60HZ 2F-3H'},
+            {codigo: '341113708011', descripcion: 'MEDIDOR ELECTRONICO MONOFASICO MOD 120-b1 120V 5(80)A 60HZ 1F-2H'},
+            {codigo: '341113708012', descripcion: 'MEDIDOR ELECTRONICO TRIFASICO MOD DTZ1513 3X120V 3X240V 5(100)A 60HZ 3F-4H'},
+            {codigo: '341113708013', descripcion: 'MEDIDOR ELECTRONICO TRIFASICO MOD 1310-b1 3X120/208V 10(80)A 60HZ 3F-4H CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
+            {codigo: '341113708014', descripcion: 'MEDIDOR MONOPASICO BIFILAR MOD DDS26D 120V 5(100)A 60HZ 1F-2H'},
+            {codigo: '341113708015', descripcion: 'KIT MEDIDOR ELECTRONICO BIFASICO MOD MEDIDA ENERGIA ACTIVA Y REACTIVA 2X120/208V, 10(80)A, 60HZ, CL1 ACTIVA Y CL2 REACTIVA. CAJA HERMETICA POLIMERICA P/MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
+            {codigo: '341113708016', descripcion: 'KIT MEDIDOR ELECTRONICO MONOFASICO ENERGIA ACTIVA Y REACTIVA CONVENIONAL MOD 1210-B1 120V 5(80)A, 60HZ IF-2H. CAJA HERMETICA POLIMERICA P/MEDIDOR MONOFASICO 120VCA SIN CORTE'},
+            {codigo: '341113708017', descripcion: 'MEDIDOR ELECTRONICO MONOFASICO ANTIHURTO MEDIDA ENERGIA ACTIVA Y REACTIVA 120V, 5(69)A 60HZ, CL1 ACTIVA Y CL2 REACTIVA'},
+            {codigo: '341113708018', descripcion: 'MEDIDOR ELECTRONICO BIFASICO MEDIDA DE ENERGIA ACTIVA Y REACTIVA 2X120/208V, 5(100)A, 60HZ, CL1 ACTIVA Y CL2 REACTIVA'},
+            {codigo: '341113708019', descripcion: 'MEDIDOR ELECTRONICO TRIFASICO MEDIDA ENERGIA ACTIVA Y REACTIVA 3X120/208V, 5(100)A, 60HZ CL1 ACTIVA Y CL2 REACTIVA'},
+            {codigo: '341113708020', descripcion: 'KIT MEDIDOR ELECTRONICO MONOFASICO CONVENIONAL DE ENERGIA ACTIVA Y REACTIVA 5(60)A, 60HZ, 120V, CL1 ACTIVA Y CL2 REACTIVA. CAJA EN POLICARBONTO TRANSPARENTE'},
+            {codigo: '341113708021', descripcion: 'MEDIDOR ELECTRONICO TRIFASICO MEDIDA ENERGIA ACTIVA Y REACTIVA 3X120/208V, 5(100)A. 60Hz CL1 ACTIVA Y CL2 REACTIVA CAJA HERMETICA POLIMÉRICA PARA MEDIDOR POLIFASICO120/240VCA SIN CORTE'},
+            {codigo: '341113708023', descripcion: 'KIT MEDIDOR ELECTRONICO TRIFASICO MEDIDA ENERGIA ACTIVA Y REACTIVA 3X120/208V, 5(100)A, 60HZ CL1 ACTIVA Y CL2 REACTIVA'},
+            {codigo: '341113708024', descripcion: 'MEDIDOR MONOFÁSICO BIFILAR ELECTRÓNICO CLASE 1 120V CORRIENTE 5(100)A MEDICIÓN DE ENERGÍA ACTIVA CLASE 1 Y REACTIVA CLASE 2'},
+            {codigo: '341113708025', descripcion: 'MEDIDOR ELECTRÓNICO BIFÁSICO TRIFILAR INELCA GENESIS II AR: CLASE 1 (ACTIVA) Y CLASE 2 (REACTIVA)'},
+            {codigo: '341131708002', descripcion: 'KIT MEDIDOR ELECTRÓNICO Y CAJA DE SEGURIDAD BIFÁSICO, PARA ENERGÍA ACTIVA Y REACTIVA'},
+            {codigo: '341113637001', descripcion: 'CUSTOMER INTERFACE UNIT MODEL: CIF-WL2 (OBIS) 5.0V 0.2A'},
+            {codigo: '3412412506001', descripcion: 'CAJA DE ACOMETIDA 3F X 9 USUARIOS'},
+            {codigo: '3421412506002', descripcion: 'CAJA DE ACOMETIDA 3F X 4 USUARIOS'},
+            // Adhesivos y selladores
+            {codigo: '112352308001', descripcion: 'SILICA GEL GRANULADO COLOR NARANJA'},
+            {codigo: '112352310001', descripcion: 'SILICONA GRIS'},
+            {codigo: '111151607001', descripcion: 'EMPAQUEUTADURA CORDON ESTILO MT 9010 PTFE-GRAFITO'},
+            {codigo: '142143509001', descripcion: 'PEGANTE LOCTITE 5 GR'},
+            {codigo: '112164201003', descripcion: 'INHIBIDOR DE CORROSION WD-40 ESPECIALIST X 185G/6.5 ONZ.'},
+            {codigo: '143222608002', descripcion: 'ROUTER ROBUSTEL SMART INDUSTRIAL IOT GATEWAY M1201 4L GATEWAY CELULAR 4G LTE'},
+            // Bobinas serie 125
+            {codigo: '125173901001', descripcion: 'BOBINA 12V SECA PARA PLATINO'},
+            {codigo: '239121033002', descripcion: 'TRANSFORMADOR DE POTENCIAL 0.5 KVA'},
+            {codigo: '239121033003', descripcion: 'TRANSFORMADOR DE POTENCIA 0.5 KVA 34.5/0, 120 KV. USO EXTERIOR'},
+            {codigo: '239121033004', descripcion: 'TRANSFORMADOR DE POTENCIA 5.0-6.5 MVA, 34.5/13.8 KV'},
+            // Mangueras serie 127
+            {codigo: '127111703001', descripcion: 'DADO DE IMPACTO CUADRANTE 1 1/2 POR 75MMDADO DE IMPACTO CUADRANTE 1 1/2 POR 75MM 6 PUNTAS'},
+            {codigo: '127121601001', descripcion: 'MANGERA DE ALTA PRESION CON ACOMPLES'},
+            {codigo: '127121601002', descripcion: 'MANGUERA PRESION 3/8 CON ACOPLES'},
+            {codigo: '127121601003', descripcion: 'MANGUERA SINFLEX 3/8'},
+            {codigo: '127121601004', descripcion: 'MANGUERA SINFLEX'},
+            {codigo: '127121604001', descripcion: 'JUEGO SELLOS VALVULAS VEHICULAR'},
+            {codigo: '127121704002', descripcion: 'MANGUERA DE PRESION DEL HIDRAULICO PLUMA'},
+            {codigo: '127121704003', descripcion: 'TUBO DEL HIDRAULICO DE PLUMA'},
+            {codigo: '127121704004', descripcion: 'TAPA DE DEPOSITO DE ACEITE HIDRAULICO'},
+            {codigo: '127121704005', descripcion: 'UNIONES SINFLEX 3/8'},
+            {codigo: '127121705001', descripcion: 'CODO ROSCADO DE 1/2'},
+            {codigo: '225174002001', descripcion: 'ENFRIADOR DE ACEITE'},
+            {codigo: '225174006001', descripcion: 'MANGUERA DE PRESIÓN SISTEMA DE REFRIGERACIÓN'},
+            {codigo: '139121006001', descripcion: 'FUENTE DE ALMENTACIÓN Y CABLE PWRWUA5V12W0US'}
+        ];
+
+        // Función para filtrar y mostrar códigos de fallas
+        function filtrarCodigosFallas(texto, showAll = false) {
+            const lista = document.getElementById('codigosFallasList');
+            lista.innerHTML = '';
+
+            const textoLower = texto.toLowerCase();
+            let categoriaActual = '';
+            let html = '';
+
+            codigosFallas.forEach(item => {
+                const codigoMatch = item.codigo.toLowerCase().includes(textoLower);
+                const descMatch = item.descripcion.toLowerCase().includes(textoLower);
+                const matches = showAll || codigoMatch || descMatch;
+
+                if (matches) {
+                    if (item.categoria !== categoriaActual) {
+                        html += `<div class="combobox-category">${item.categoria}</div>`;
+                        categoriaActual = item.categoria;
+                    }
+                    html += `<div class="combobox-item" onclick="seleccionarCodigoFalla('${item.codigo}', '${item.descripcion.replace(/'/g, "\\'")}')">
+                        <span class="codigo">${item.codigo}</span>
+                        <span class="descripcion">${item.descripcion}</span>
+                    </div>`;
+                }
+            });
+
+            lista.innerHTML = html || '<div class="combobox-item" style="color:#999;">Sin resultados</div>';
+            lista.classList.add('show');
+        }
+
+        // Mostrar todos los códigos al hacer clic
+        function mostrarTodosCodigosFallas() {
+            filtrarCodigosFallas('', true);
+        }
+
+        // Función para filtrar y mostrar materiales
+        function filtrarMateriales(texto, showAll = false) {
+            const lista = document.getElementById('materialesList');
+            lista.innerHTML = '';
+
+            const textoLower = texto.toLowerCase();
+            let html = '';
+
+            materiales.forEach(item => {
+                const codigoMatch = item.codigo.toLowerCase().includes(textoLower);
+                const descMatch = item.descripcion.toLowerCase().includes(textoLower);
+                const matches = showAll || codigoMatch || descMatch;
+
+                if (matches) {
+                    html += `<div class="combobox-item" onclick="seleccionarMaterial('${item.codigo}', '${item.descripcion.replace(/'/g, "\\'")}')">
+                        <span class="codigo">${item.codigo}</span>
+                        <span class="descripcion">${item.descripcion}</span>
+                    </div>`;
+                }
+            });
+
+            lista.innerHTML = html || '<div class="combobox-item" style="color:#999;">Sin resultados</div>';
+            lista.classList.add('show');
+        }
+
+        // Mostrar todos los materiales al hacer clic
+        function mostrarTodosMateriales() {
+            filtrarMateriales('', true);
+        }
+
+        // Seleccionar código de falla
+        function seleccionarCodigoFalla(codigo, descripcion) {
+            const descripcionTextarea = document.getElementById('descripcionTrabajos');
+            const texto = codigo + ': ' + descripcion;
+
+            if (descripcionTextarea.value) {
+                descripcionTextarea.value += '\n' + texto;
+            } else {
+                descripcionTextarea.value = texto;
+            }
+
+            document.getElementById('codigoFallaSearch').value = '';
+            document.getElementById('codigosFallasList').classList.remove('show');
+        }
+
+        // Seleccionar material
+        function seleccionarMaterial(codigo, descripcion) {
+            const tbody = document.getElementById('materialsBody');
+
+            // Buscar la última fila o crear una nueva
+            let lastRow = tbody.lastElementChild;
+            if (!lastRow) {
+                addMaterialRow();
+                lastRow = tbody.lastElementChild;
+            }
+
+            // Verificar si la última fila tiene datos
+            const lastDesc = lastRow.querySelector('input[name="materialDescripcion[]"]').value;
+            const lastCodigo = lastRow.querySelector('input[name="materialCodigo[]"]').value;
+
+            if (lastDesc || lastCodigo) {
+                addMaterialRow();
+                lastRow = tbody.lastElementChild;
+            }
+
+            // Rellenar la fila con los datos del material
+            lastRow.querySelector('input[name="materialDescripcion[]"]').value = descripcion;
+            lastRow.querySelector('input[name="materialCodigo[]"]').value = codigo;
+            lastRow.querySelector('input[name="materialCantidad[]"]').value = '1';
+            lastRow.querySelector('input[name="materialCantidad[]"]').focus();
+
+            document.getElementById('materialSearch').value = '';
+            document.getElementById('materialesList').classList.remove('show');
+        }
+
+        // Cerrar listas al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const containerFallas = document.getElementById('codigosFallasContainer');
+            const containerMateriales = document.getElementById('materialesContainer');
+
+            if (!containerFallas.contains(e.target)) {
+                document.getElementById('codigosFallasList').classList.remove('show');
+            }
+            if (!containerMateriales.contains(e.target)) {
+                document.getElementById('materialesList').classList.remove('show');
+            }
+        });
+
+        // Event listeners para búsqueda - asegurar que funcione con click e input
+        const codigoFallaSearch = document.getElementById('codigoFallaSearch');
+        const materialSearch = document.getElementById('materialSearch');
+
+        codigoFallaSearch.addEventListener('input', function() {
+            filtrarCodigosFallas(this.value, false);
+        });
+
+        codigoFallaSearch.addEventListener('focus', function() {
+            if (this.value === '') {
+                filtrarCodigosFallas('', true);
+            } else {
+                filtrarCodigosFallas(this.value, false);
+            }
+        });
+
+        materialSearch.addEventListener('input', function() {
+            filtrarMateriales(this.value, false);
+        });
+
+        materialSearch.addEventListener('focus', function() {
+            if (this.value === '') {
+                filtrarMateriales('', true);
+            } else {
+                filtrarMateriales(this.value, false);
+            }
+        });
+
+        // Agregar fila de material
+        function addMaterialRow() {
+            const tbody = document.getElementById('materialsBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" name="materialDescripcion[]" placeholder="Descripción del material"></td>
+                <td><input type="text" name="materialCodigo[]" placeholder="Código"></td>
+                <td><input type="number" name="materialCantidad[]" placeholder="Cantidad" min="1"></td>
+                <td><button type="button" class="btn btn-danger" onclick="removeMaterialRow(this)">X</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        // Eliminar fila de material
+        function removeMaterialRow(btn) {
+            const row = btn.closest('tr');
+            const tbody = document.getElementById('materialsBody');
+            if (tbody.children.length > 1) {
+                row.remove();
+            } else {
+                row.querySelectorAll('input').forEach(input => input.value = '');
+            }
+        }
+
+        // Mostrar panel de fotos según selección
+        function showPhotoPanel(panel) {
+            const tabRealizado = document.getElementById('tabRealizado');
+            const tabPendiente = document.getElementById('tabPendiente');
+            const panelRealizado = document.getElementById('panelRealizado');
+            const panelPendiente = document.getElementById('panelPendiente');
+
+            if (panel === 'realizado') {
+                tabRealizado.classList.add('active');
+                tabPendiente.classList.remove('active');
+                panelRealizado.classList.add('active');
+                panelPendiente.classList.remove('active');
+            } else {
+                tabPendiente.classList.add('active');
+                tabRealizado.classList.remove('active');
+                panelPendiente.classList.add('active');
+                panelRealizado.classList.remove('active');
+            }
+        }
+
+        // Manejar carga de fotos
+        function handlePhotoUpload(input, category) {
+            const files = input.files;
+            if (files.length > 0) {
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const photoData = {
+                                id: Date.now() + Math.random(),
+                                data: e.target.result,
+                                name: file.name,
+                                date: new Date().toLocaleString()
+                            };
+                            photos[category].push(photoData);
+                            renderPhotos(category);
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert('Por favor seleccione imágenes válidas (máx. 5MB)');
+                    }
+                });
+            }
+            input.value = '';
+        }
+
+        // Tomar foto con ubicación GPS
+        function takePhotoWithLocation(category) {
+            // Crear input file temporal para cámara
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment';
+
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    // Obtener ubicación
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                const lat = position.coords.latitude.toFixed(6);
+                                const lng = position.coords.longitude.toFixed(6);
+                                const coords = `${lat}, ${lng}`;
+
+                                // Leer imagen
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const photoData = {
+                                        id: Date.now() + Math.random(),
+                                        data: e.target.result,
+                                        name: file.name,
+                                        date: new Date().toLocaleString(),
+                                        location: coords
+                                    };
+                                    photos[category].push(photoData);
+                                    renderPhotos(category);
+
+                                    // Auto-llenar coordenadas según categoría
+                                    if (category === 'activo') {
+                                        document.getElementById('coordenadasActivo').value = coords;
+                                    } else if (category === 'lugar') {
+                                        document.getElementById('coordenadasLugar').value = coords;
+                                    }
+                                };
+                                reader.readAsDataURL(file);
+                            },
+                            function(error) {
+                                // Si falla geolocalización, guardar sin ubicación
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    const photoData = {
+                                        id: Date.now() + Math.random(),
+                                        data: e.target.result,
+                                        name: file.name,
+                                        date: new Date().toLocaleString()
+                                    };
+                                    photos[category].push(photoData);
+                                    renderPhotos(category);
+                                    alert('Foto guardada. No se pudo obtener ubicación.');
+                                };
+                                reader.readAsDataURL(file);
+                            },
+                            { enableHighAccuracy: true, timeout: 10000 }
+                        );
+                    } else {
+                        // Sin geolocalización disponible
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const photoData = {
+                                id: Date.now() + Math.random(),
+                                data: e.target.result,
+                                name: file.name,
+                                date: new Date().toLocaleString()
+                            };
+                            photos[category].push(photoData);
+                            renderPhotos(category);
+                            alert('Geolocalización no disponible en este dispositivo.');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            };
+
+            input.click();
+        }
+
+        // Renderizar fotos de una categoría
+        function renderPhotos(category) {
+            const grid = document.getElementById(category + 'Grid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            if (photos[category].length === 0) {
+                grid.innerHTML = '<p class="no-photos">No hay fotos cargadas</p>';
+                return;
+            }
+
+            photos[category].forEach(photo => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.innerHTML = `
+                    <img src="${photo.data}" alt="${photo.name}">
+                    <button type="button" class="delete-btn" onclick="deletePhoto('${category}', ${photo.id})">
+                        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </button>
+                `;
+                grid.appendChild(photoItem);
+            });
+        }
+
+        // Eliminar foto
+        function deletePhoto(category, photoId) {
+            photos[category] = photos[category].filter(p => p.id !== photoId);
+            renderPhotos(category);
+        }
+
+        // Guardar orden en localStorage y generar PDF
+        function guardarOrden() {
+            const form = document.getElementById('workOrderForm');
+            const formData = new FormData(form);
+
+            const ordenData = {
+                id: Date.now(),
+                fechaGuardado: new Date().toLocaleString(),
+                datos: {},
+                fotos: photos
+            };
+
+            // Recoger todos los campos del formulario
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'radio') {
+                    if (input.checked) {
+                        ordenData.datos[input.name] = input.value;
+                    }
+                } else if (input.type === 'checkbox') {
+                    ordenData.datos[input.name] = input.checked;
+                } else if (input.name.endsWith('[]')) {
+                    if (!ordenData.datos[input.name]) {
+                        ordenData.datos[input.name] = [];
+                    }
+                    if (input.value) {
+                        ordenData.datos[input.name].push(input.value);
+                    }
+                } else {
+                    ordenData.datos[input.name] = input.value;
+                }
+            });
+
+            // Guardar materiales de la tabla
+            const materialRows = document.querySelectorAll('#materialsBody tr');
+            ordenData.datos.materiales = [];
+            materialRows.forEach(row => {
+                const desc = row.querySelector('input[name="materialDescripcion[]"]').value;
+                const codigo = row.querySelector('input[name="materialCodigo[]"]').value;
+                const cantidad = row.querySelector('input[name="materialCantidad[]"]').value;
+                if (desc || codigo || cantidad) {
+                    ordenData.datos.materiales.push({ descripcion: desc, codigo: codigo, cantidad: cantidad });
+                }
+            });
+
+            // Guardar en localStorage
+            let ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
+            ordenes.push(ordenData);
+            localStorage.setItem('ordenesTrabajo', JSON.stringify(ordenes));
+
+            alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.');
+        }
+
+        // Generar y descargar PDF
+        function generarPDF() {
+            const form = document.getElementById('workOrderForm');
+
+            // Crear contenido HTML para el PDF
+            let html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Orden de Trabajo - CEDENAR</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; }
+                    .header { text-align: center; border-bottom: 2px solid #1e3c72; padding-bottom: 15px; margin-bottom: 20px; }
+                    .header h1 { color: #1e3c72; font-size: 18px; margin-bottom: 5px; }
+                    .header p { color: #666; font-size: 11px; }
+                    .section { margin-bottom: 20px; }
+                    .section-title { background: #1e3c72; color: white; padding: 8px 12px; font-weight: bold; margin-bottom: 10px; }
+                    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+                    .form-group { margin-bottom: 8px; }
+                    .form-group label { font-weight: bold; display: block; margin-bottom: 3px; color: #333; }
+                    .form-group p { border-bottom: 1px solid #ccc; padding-bottom: 3px; min-height: 18px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    th, td { border: 1px solid #333; padding: 8px; text-align: left; font-size: 10px; }
+                    th { background: #f0f0f0; font-weight: bold; }
+                    .signature-section { display: flex; justify-content: space-around; margin-top: 30px; }
+                    .signature-box { text-align: center; width: 45%; }
+                    .signature-line { border-bottom: 1px solid #333; margin-top: 40px; width: 80%; margin-left: auto; margin-right: auto; }
+                    .photos-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+                    .photo-category { margin-bottom: 15px; }
+                    .photo-title { margin-bottom: 8px; color: #333; }
+                    .photo-item { width: 360px; height: 360px; border: 1px solid #ccc; overflow: hidden; page-break-inside: avoid; }
+                    .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+                    .contact-info { margin-top: 20px; padding: 10px; background: #f5f5f5; text-align: center; font-size: 10px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>ORDEN DE TRABAJO DISTRIBUIDOR</h1>
+                    <p>Centrales Eléctricas de Nariño S.A.E.S.P.</p>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">1. PLANIFICACIÓN DEL EVENTO</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Tipo de Evento:</label><p>${getRadioValue('tipoEvento')}</p></div>
+                        <div class="form-group"><label>Consignación No.:</label><p>${form.consignacion?.value || ''}</p></div>
+                        <div class="form-group"><label>Fecha Consignación:</label><p>${form.fechaConsignacion?.value || ''}</p></div>
+                        <div class="form-group"><label>Orden de Trabajo No.:</label><p>${form.ordenTrabajo?.value || ''}</p></div>
+                        <div class="form-group"><label>Fecha Inicio Prog.:</label><p>${form.fechaInicioProg?.value || ''}</p></div>
+                        <div class="form-group"><label>Hora Inicio Prog.:</label><p>${form.horaInicioProg?.value || ''}</p></div>
+                        <div class="form-group"><label>Circuito:</label><p>${form.circuito?.value || ''}</p></div>
+                        <div class="form-group"><label>Zona:</label><p>${form.zona?.value || ''}</p></div>
+                        <div class="form-group"><label>Municipio:</label><p>${form.municipio?.value || ''}</p></div>
+                        <div class="form-group"><label>Dirección:</label><p>${form.direccion?.value || ''}</p></div>
+                        <div class="form-group"><label>Coordinador Asignado:</label><p>${form.coordinador?.value || ''}</p></div>
+                        <div class="form-group"><label>Tipo de Carga:</label><p>${getRadioValue('tipoCarga')}</p></div>
+                    </div>
+                    <div class="form-group"><label>Descripción de Trabajos a Realizar:</label><p style="white-space:pre-wrap;">${form.descripcionTrabajos?.value || ''}</p></div>
+                    <div class="form-group"><label>Observaciones:</label><p>${form.observaciones?.value || ''}</p></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">2. EJECUCIÓN DEL TRABAJO</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Fecha Inicio:</label><p>${form.fechaInicio?.value || ''}</p></div>
+                        <div class="form-group"><label>Fecha Finalización:</label><p>${form.fechaFinalizacion?.value || ''}</p></div>
+                    </div>
+                    <div class="form-group"><label>Observaciones del Trabajo:</label><p>${form.observacionesEjecucion?.value || ''}</p></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">3. MATERIALES</div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Requisición Materiales No.:</label><p>${form.requisicionMateriales?.value || ''}</p></div>
+                        <div class="form-group"><label>Fecha:</label><p>${form.fechaRequisicion?.value || ''}</p></div>
+                    </div>
+                    <table>
+                        <thead><tr><th>Descripción</th><th>Código</th><th>Cantidad</th></tr></thead>
+                        <tbody>`;
+
+            // Agregar materiales
+            const materialRows = document.querySelectorAll('#materialsBody tr');
+            materialRows.forEach(row => {
+                const desc = row.querySelector('input[name="materialDescripcion[]"]').value;
+                const codigo = row.querySelector('input[name="materialCodigo[]"]').value;
+                const cantidad = row.querySelector('input[name="materialCantidad[]"]').value;
+                if (desc || codigo || cantidad) {
+                    html += `<tr><td>${desc}</td><td>${codigo}</td><td>${cantidad}</td></tr>`;
+                }
+            });
+
+            html += `</tbody></table></div>
+
+                <div class="section">
+                    <div class="section-title">4. REGISTRO FOTOGRÁFICO</div>
+                    <div class="photos-section">
+                        ${photos.antes.length > 0 ? `
+                        <div class="photo-category">
+                            <p class="photo-title"><strong>FOTOS DEL ANTES (${photos.antes.length})</strong></p>
+                            <div class="photos-grid">
+                                ${photos.antes.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto antes"></div>`).join('')}
+                            </div>
+                        </div>` : ''}
+                        ${photos.durante.length > 0 ? `
+                        <div class="photo-category">
+                            <p class="photo-title"><strong>FOTOS DEL DURANTE (${photos.durante.length})</strong></p>
+                            <div class="photos-grid">
+                                ${photos.durante.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto durante"></div>`).join('')}
+                            </div>
+                        </div>` : ''}
+                        ${photos.despues.length > 0 ? `
+                        <div class="photo-category">
+                            <p class="photo-title"><strong>FOTOS DEL DESPUÉS (${photos.despues.length})</strong></p>
+                            <div class="photos-grid">
+                                ${photos.despues.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto después"></div>`).join('')}
+                            </div>
+                        </div>` : ''}
+                        ${photos.activo.length > 0 ? `
+                        <div class="photo-category">
+                            <p class="photo-title"><strong>FOTOS DEL ACTIVO INSTALADO (${photos.activo.length})</strong></p>
+                            <div class="photos-grid">
+                                ${photos.activo.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto activo"></div>`).join('')}
+                            </div>
+                        </div>` : ''}
+                        ${form.coordenadasActivo?.value ? `<p><strong>Coordenadas del Activo:</strong> ${form.coordenadasActivo.value}</p>` : ''}
+                        ${photos.lugar.length > 0 ? `
+                        <div class="photo-category">
+                            <p class="photo-title"><strong>FOTOS DEL LUGAR - TRABAJO PENDIENTE (${photos.lugar.length})</strong></p>
+                            <div class="photos-grid">
+                                ${photos.lugar.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto lugar"></div>`).join('')}
+                            </div>
+                        </div>` : ''}
+                        ${form.coordenadasLugar?.value ? `<p><strong>Coordenadas del Lugar:</strong> ${form.coordenadasLugar.value}</p>` : ''}
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">5. FIRMA EN CONSTANCIA</div>
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <p><strong>Coordinador de Grupo</strong></p>
+                            <p>${form.nombreCoordinadorFirma?.value || ''}</p>
+                            <div class="signature-line"></div>
+                            <p>Firma</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-info">
+                    <p><strong>CEDENAR S.A.E.S.P.</strong> - Centrales Eléctricas de Nariño S.A.E.S.P.</p>
+                    <p>Tel: 115-7336900 | Bomberos: 119 | Cruz Roja: 7232993</p>
+                    <p>Tratará los datos personales conforme a la ley 1581/2012</p>
+                </div>
+            </body>
+            </html>`;
+
+            // Abrir en nueva ventana para imprimir/guardar
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
+
+        function getRadioValue(name) {
+            const radio = document.querySelector(`input[name="${name}"]:checked`);
+            return radio ? radio.value : '';
+        }
+
+        // Imprimir formulario
+        function imprimirFormulario() {
+            window.print();
+        }
+
+        // Nueva orden
+        function nuevoFormulario() {
+            if (confirm('¿Está seguro de crear una nueva orden? Los datos no guardados se perderán.')) {
+                document.getElementById('workOrderForm').reset();
+                // Limpiar fotos
+                photos.antes = [];
+                photos.durante = [];
+                photos.despues = [];
+                photos.activo = [];
+                photos.lugar = [];
+                renderPhotos('antes');
+                renderPhotos('durante');
+                renderPhotos('despues');
+                renderPhotos('activo');
+                renderPhotos('lugar');
+                // Reset tabs
+                showPhotoPanel('realizado');
+                // Agregar una fila de material vacía
+                const tbody = document.getElementById('materialsBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td><input type="text" name="materialDescripcion[]" placeholder="Descripción del material"></td>
+                        <td><input type="text" name="materialCodigo[]" placeholder="Código"></td>
+                        <td><input type="number" name="materialCantidad[]" placeholder="Cantidad" min="1"></td>
+                        <td><button type="button" class="btn btn-danger" onclick="removeMaterialRow(this)">X</button></td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Eliminar orden
+        function eliminarOrden() {
+            if (confirm('¿Está seguro de eliminar esta orden? Esta acción no se puede deshacer.')) {
+                document.getElementById('workOrderForm').reset();
+                photos.antes = [];
+                photos.durante = [];
+                photos.despues = [];
+                photos.activo = [];
+                photos.lugar = [];
+                renderPhotos('antes');
+                renderPhotos('durante');
+                renderPhotos('despues');
+                renderPhotos('activo');
+                renderPhotos('lugar');
+                showPhotoPanel('realizado');
+                alert('Orden eliminada');
+            }
+        }
+
+        // Drag and drop para fotos
+        document.querySelectorAll('.photo-upload-area').forEach(area => {
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('dragover');
+            });
+
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('dragover');
+            });
+
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('dragover');
+                const category = area.dataset.category;
+                const input = document.getElementById(category + 'Input');
+                input.files = e.dataTransfer.files;
+                handlePhotoUpload(input, category);
+            });
+        });
+
+        // Inicializar vista de fotos
+        renderPhotos('antes');
+        renderPhotos('durante');
+        renderPhotos('despues');
+        renderPhotos('activo');
+        renderPhotos('lugar');
+
+        // Función para toggle modo revisión
+        function toggleRevisionMode() {
+            const revisionRadio = document.getElementById('revision');
+            const revisionFields = document.querySelectorAll('.revision-field');
+
+            if (revisionRadio.checked) {
+                revisionFields.forEach(field => {
+                    field.classList.add('hidden');
+                });
+            } else {
+                revisionFields.forEach(field => {
+                    field.classList.remove('hidden');
+                });
+            }
+        }
+
+        // Actualizar nombres en firmas en tiempo real
+        document.getElementById('nombreCoordinadorFirma').addEventListener('input', function() {
+            document.getElementById('displayCoordinador').textContent = this.value || 'Firma';
+        });
+    </script>
+</body>
+</html>
