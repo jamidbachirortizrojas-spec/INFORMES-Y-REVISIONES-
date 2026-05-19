@@ -695,6 +695,25 @@
             background: #c0392b;
         }
 
+        .modal-search {
+            margin-bottom: 20px;
+        }
+
+        .modal-search input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .modal-search input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
         .no-ordenes {
             text-align: center;
             padding: 40px;
@@ -1124,11 +1143,6 @@
                         <input type="date" id="fechaConsignacion" name="fechaConsignacion">
                     </div>
 
-                    <div class="form-group revision-field">
-                        <label for="ordenTrabajo">Orden de Trabajo No.:</label>
-                        <input type="text" id="ordenTrabajo" name="ordenTrabajo" placeholder="Ej: CEN57094CDN">
-                    </div>
-
                     <div class="form-group">
                         <label for="fechaInicioProg">Fecha Inicio Prog.:</label>
                         <input type="date" id="fechaInicioProg" name="fechaInicioProg">
@@ -1197,6 +1211,9 @@
                             <optgroup label="41EN">
                                 <option value="41EN01">41EN01</option>
                                 <option value="41ENTF1N3">41ENTF1N3</option>
+                            </optgroup>
+                            <optgroup label="41NA">
+                                <option value="41NA01">41NA01</option>
                             </optgroup>
                         </select>
                     </div>
@@ -1318,8 +1335,8 @@
                     </div>
 
                     <div class="form-group full-width">
-                        <label for="observaciones">Observaciones:</label>
-                        <textarea id="observaciones" name="observaciones" placeholder="Observaciones adicionales"></textarea>
+                        <label for="observaciones">Estructura más cercana:</label>
+                        <textarea id="observaciones" name="observaciones" placeholder="Ej: 41TA150525"></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1637,6 +1654,9 @@
                 <div class="modal-header">
                     <h3>Órdenes de Trabajo Guardadas</h3>
                     <button class="modal-close" onclick="cerrarModal()">&times;</button>
+                </div>
+                <div class="modal-search">
+                    <input type="text" id="buscadorOrdenes" placeholder="Buscar por número de consignación, coordinador o ciudad..." onkeyup="filtrarOrdenes()">
                 </div>
                 <div class="ordenes-lista" id="ordenesLista">
                     <!-- Las órdenes se mostrarán aquí -->
@@ -2927,9 +2947,9 @@
             } else {
                 lista.innerHTML = ordenes.map((orden, index) => {
                     // Crear nombre descriptivo para la orden
-                    const numeroOrdenTrabajo = orden.datos.ordenTrabajo || 'Sin Número';
+                    const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
                     const coordinador = orden.datos.coordinador || 'Sin Coordinador';
-                    const nombreOrden = `${numeroOrdenTrabajo} - ${coordinador}`;
+                    const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
 
                     return `
                     <div class="orden-item">
@@ -2949,6 +2969,51 @@
             }
 
             modal.classList.add('active');
+        }
+
+        // Filtrar órdenes según búsqueda
+        function filtrarOrdenes() {
+            const textoBusqueda = document.getElementById('buscadorOrdenes').value.toLowerCase();
+            const lista = document.getElementById('ordenesLista');
+            const ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
+            const ordenesFiltradas = ordenes.filter(orden => {
+                const consignacion = (orden.datos.consignacion || '').toLowerCase();
+                const coordinador = (orden.datos.coordinador || '').toLowerCase();
+                const ciudad = (orden.datos.ciudad || '').toLowerCase();
+                return consignacion.includes(textoBusqueda) ||
+                       coordinador.includes(textoBusqueda) ||
+                       ciudad.includes(textoBusqueda);
+            });
+
+            if (ordenesFiltradas.length === 0) {
+                lista.innerHTML = `
+                    <div class="no-ordenes">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                        <p>No se encontraron órdenes con "${textoBusqueda}"</p>
+                    </div>
+                `;
+            } else {
+                lista.innerHTML = ordenesFiltradas.map((orden, index) => {
+                    const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
+                    const coordinador = orden.datos.coordinador || 'Sin Coordinador';
+                    const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
+
+                    return `
+                    <div class="orden-item">
+                        <div class="orden-item-header">
+                            <h4>${nombreOrden}</h4>
+                            <span class="orden-item-fecha">${orden.fechaGuardado}</span>
+                        </div>
+                        <div class="orden-item-info">
+                            ${orden.datos.ciudad ? `<span><strong>Ciudad:</strong> ${orden.datos.ciudad}</span>` : ''}
+                        </div>
+                        <div class="orden-item-actions">
+                            <button class="btn-cargar" onclick="cargarOrden(${orden.id})">Cargar</button>
+                            <button class="btn-eliminar-lista" onclick="eliminarOrdenGuardada(${orden.id})">Eliminar</button>
+                        </div>
+                    </div>
+                `}).join('');
+            }
         }
 
         // Cerrar modal
@@ -3042,63 +3107,89 @@
 
         // Guardar orden en localStorage y generar PDF
         function guardarOrden() {
-            const form = document.getElementById('workOrderForm');
-            const formData = new FormData(form);
+            try {
+                const form = document.getElementById('workOrderForm');
+                const formData = new FormData(form);
 
-            const ordenData = {
-                id: Date.now(),
-                fechaGuardado: new Date().toLocaleString(),
-                datos: {},
-                fotos: photos
-            };
+                const ordenData = {
+                    id: Date.now(),
+                    fechaGuardado: new Date().toLocaleString(),
+                    datos: {},
+                    fotos: photos
+                };
 
-            // Recoger todos los campos del formulario
-            const inputs = form.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                if (input.type === 'radio') {
-                    if (input.checked) {
+                // Recoger todos los campos del formulario
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.type === 'radio') {
+                        if (input.checked) {
+                            ordenData.datos[input.name] = input.value;
+                        }
+                    } else if (input.type === 'checkbox') {
+                        ordenData.datos[input.name] = input.checked;
+                    } else if (input.name.endsWith('[]')) {
+                        if (!ordenData.datos[input.name]) {
+                            ordenData.datos[input.name] = [];
+                        }
+                        if (input.value) {
+                            ordenData.datos[input.name].push(input.value);
+                        }
+                    } else {
                         ordenData.datos[input.name] = input.value;
                     }
-                } else if (input.type === 'checkbox') {
-                    ordenData.datos[input.name] = input.checked;
-                } else if (input.name.endsWith('[]')) {
-                    if (!ordenData.datos[input.name]) {
-                        ordenData.datos[input.name] = [];
+                });
+
+                // Guardar materiales de la tabla
+                const materialRows = document.querySelectorAll('#materialsBody tr');
+                ordenData.datos.materiales = [];
+                materialRows.forEach(row => {
+                    const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                    const codigo = row.querySelector('input[name="materialCodigo[]"]');
+                    const cantidad = row.querySelector('input[name="materialCantidad[]"]');
+                    if (desc && codigo && cantidad) {
+                        if (desc.value || codigo.value || cantidad.value) {
+                            ordenData.datos.materiales.push({ descripcion: desc.value, codigo: codigo.value, cantidad: cantidad.value });
+                        }
                     }
-                    if (input.value) {
-                        ordenData.datos[input.name].push(input.value);
-                    }
-                } else {
-                    ordenData.datos[input.name] = input.value;
-                }
-            });
+                });
 
-            // Guardar materiales de la tabla
-            const materialRows = document.querySelectorAll('#materialsBody tr');
-            ordenData.datos.materiales = [];
-            materialRows.forEach(row => {
-                const desc = row.querySelector('input[name="materialDescripcion[]"]').value;
-                const codigo = row.querySelector('input[name="materialCodigo[]"]').value;
-                const cantidad = row.querySelector('input[name="materialCantidad[]"]').value;
-                if (desc || codigo || cantidad) {
-                    ordenData.datos.materiales.push({ descripcion: desc, codigo: codigo, cantidad: cantidad });
-                }
-            });
+                // Guardar en localStorage
+                let ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
+                ordenes.push(ordenData);
+                localStorage.setItem('ordenesTrabajo', JSON.stringify(ordenes));
 
-            // Guardar en localStorage
-            let ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
-            ordenes.push(ordenData);
-            localStorage.setItem('ordenesTrabajo', JSON.stringify(ordenes));
-
-            alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.');
+                alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.');
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar la orden: ' + error.message);
+            }
         }
 
         // Generar y descargar PDF
         function generarPDF() {
-            const form = document.getElementById('workOrderForm');
+            try {
+                // Verificar popup blocker
+                let printWindow = window.open('', '_blank');
+                if (!printWindow || printWindow.closed) {
+                    alert('Por favor permita las ventanas emergentes para generar el PDF, o desactive el bloqueador de ventanas.');
+                    return;
+                }
 
-            // Crear contenido HTML para el PDF
-            let html = `
+                const form = document.getElementById('workOrderForm');
+
+                // Obtener logo base64
+                let logoBase64 = '';
+                try {
+                    const logoImg = document.querySelector('.logo-img');
+                    if (logoImg && logoImg.src) {
+                        logoBase64 = logoImg.src;
+                    }
+                } catch (e) {
+                    console.log('Logo no disponible, usando texto');
+                }
+
+                // Crear contenido HTML para el PDF
+                let html = `
             <!DOCTYPE html>
             <html>
             <head>
@@ -3108,8 +3199,10 @@
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; }
                     .header { text-align: center; border-bottom: 2px solid #1e3c72; padding-bottom: 15px; margin-bottom: 20px; }
-                    .header h1 { color: #1e3c72; font-size: 18px; margin-bottom: 5px; }
+                    .header h1 { color: #1e3c72; font-size: 18px; margin-bottom: 5px; text-align: center; }
                     .header p { color: #666; font-size: 11px; }
+                    .header-logo { width: 60px; height: 60px; margin: 0 auto 10px; }
+                    .header-logo img { width: 100%; height: 100%; object-fit: contain; }
                     .section { margin-bottom: 20px; }
                     .section-title { background: #1e3c72; color: white; padding: 8px 12px; font-weight: bold; margin-bottom: 10px; }
                     .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -3122,16 +3215,31 @@
                     .signature-section { display: flex; justify-content: space-around; margin-top: 30px; }
                     .signature-box { text-align: center; width: 45%; }
                     .signature-line { border-bottom: 1px solid #333; margin-top: 40px; width: 80%; margin-left: auto; margin-right: auto; }
-                    .photos-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-                    .photo-category { margin-bottom: 15px; }
+                    .photos-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 15px;
+                        margin-top: 10px;
+                    }
+                    .photo-category { margin-bottom: 15px; page-break-inside: avoid; }
                     .photo-title { margin-bottom: 8px; color: #333; }
-                    .photo-item { width: 360px; height: 360px; border: 1px solid #ccc; overflow: hidden; page-break-inside: avoid; }
-                    .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+                    .photo-item {
+                        width: 100%;
+                        aspect-ratio: 1;
+                        border: 3px solid #1e3c72;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        background: #fff;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                        padding: 5px;
+                    }
+                    .photo-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
                     .contact-info { margin-top: 20px; padding: 10px; background: #f5f5f5; text-align: center; font-size: 10px; }
                 </style>
             </head>
             <body>
                 <div class="header">
+                    ${logoBase64 ? `<div class="header-logo"><img src="${logoBase64}" alt="CEDENAR Logo" onerror="this.parentElement.style.display='none'"></div>` : ''}
                     <h1>ORDEN DE TRABAJO DISTRIBUIDOR</h1>
                     <p>Centrales Eléctricas de Nariño S.A.E.S.P.</p>
                 </div>
@@ -3142,7 +3250,6 @@
                         <div class="form-group"><label>Tipo de Evento:</label><p>${getRadioValue('tipoEvento')}</p></div>
                         <div class="form-group"><label>Consignación No.:</label><p>${form.consignacion?.value || ''}</p></div>
                         <div class="form-group"><label>Fecha Consignación:</label><p>${form.fechaConsignacion?.value || ''}</p></div>
-                        <div class="form-group"><label>Orden de Trabajo No.:</label><p>${form.ordenTrabajo?.value || ''}</p></div>
                         <div class="form-group"><label>Fecha Inicio Prog.:</label><p>${form.fechaInicioProg?.value || ''}</p></div>
                         <div class="form-group"><label>Hora Inicio Prog.:</label><p>${form.horaInicioProg?.value || ''}</p></div>
                         <div class="form-group"><label>Circuito:</label><p>${form.circuito?.value || ''}</p></div>
@@ -3153,7 +3260,7 @@
                         <div class="form-group"><label>Tipo de Carga:</label><p>${getRadioValue('tipoCarga')}</p></div>
                     </div>
                     <div class="form-group"><label>Descripción de Trabajos a Realizar:</label><p style="white-space:pre-wrap;">${form.descripcionTrabajos?.value || ''}</p></div>
-                    <div class="form-group"><label>Observaciones:</label><p>${form.observaciones?.value || ''}</p></div>
+                    <div class="form-group"><label>Estructura más cercana:</label><p>${form.observaciones?.value || ''}</p></div>
                 </div>
 
                 <div class="section">
@@ -3251,13 +3358,24 @@
             </body>
             </html>`;
 
-            // Abrir en nueva ventana para imprimir/guardar
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(html);
-            printWindow.document.close();
-            printWindow.onload = function() {
-                printWindow.print();
-            };
+                // Escribir contenido y abrir print dialog
+                printWindow.document.write(html);
+                printWindow.document.close();
+
+                // Esperar a que cargue la imagen antes de imprimir
+                setTimeout(function() {
+                    try {
+                        printWindow.focus();
+                        printWindow.print();
+                    } catch (e) {
+                        console.error('Error al imprimir:', e);
+                        alert('El PDF se generó. Por favor imprima manualmente desde el menú del navegador.');
+                    }
+                }, 500);
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('Error al generar PDF: ' + error.message);
+            }
         }
 
         function getRadioValue(name) {
