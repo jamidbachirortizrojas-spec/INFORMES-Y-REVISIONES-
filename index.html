@@ -1133,14 +1133,19 @@
                         </div>
                     </div>
 
-                    <div class="form-group revision-field">
+                    <div class="form-group revision-field" style="display:none;">
                         <label for="consignacion">Consignación No.:
                         <input type="text" id="consignacion" name="consignacion" placeholder="Número de consignación">
                     </div>
 
-                    <div class="form-group revision-field">
+                    <div class="form-group revision-field" style="display:none;">
                         <label for="fechaConsignacion">Fecha Consignación:</label>
                         <input type="date" id="fechaConsignacion" name="fechaConsignacion">
+                    </div>
+
+                    <div class="form-group" id="numeroRevisionGroup" style="display:none;">
+                        <label for="numeroRevision">Número de Revisión:</label>
+                        <input type="text" id="numeroRevision" name="numeroRevision" placeholder="Número de revisión">
                     </div>
 
                     <div class="form-group">
@@ -1367,12 +1372,12 @@
                 </div>
 
                 <div class="form-grid">
-                    <div class="form-group">
+                    <div class="form-group revision-fecha-field" style="display:none;">
                         <label for="fechaInicio">Fecha Inicio:</label>
                         <input type="date" id="fechaInicio" name="fechaInicio">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group revision-fecha-field" style="display:none;">
                         <label for="fechaFinalizacion">Fecha Finalización:</label>
                         <input type="date" id="fechaFinalizacion" name="fechaFinalizacion">
                     </div>
@@ -1599,6 +1604,27 @@
                 </div>
             </div>
 
+            <!-- Sección 4.5: Permiso de Trabajo Seguro en Altura -->
+            <div class="form-section">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    PERMISO: TRABAJO SEGURO EN ALTURA
+                </div>
+                <p style="color: #666; margin-bottom: 15px;">Subir imágenes del permiso de trabajo seguro en altura</p>
+                <div class="photo-upload-area" data-category="permiso" onclick="document.getElementById('permisoInput').click()">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                    <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                    <input type="file" id="permisoInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'permiso')">
+                    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); document.getElementById('permisoInput').click()">
+                            🖼️ Seleccionar Imágenes
+                        </button>
+                    </div>
+                </div>
+                <div class="photo-grid" id="permisoGrid"></div>
+            </div>
+
             <!-- Sección 5: Firmas -->
             <div class="form-section">
                 <div class="section-title">
@@ -1679,7 +1705,8 @@
             durante: [],
             despues: [],
             activo: [],
-            lugar: []
+            lugar: [],
+            permiso: []
         };
 
         // Base de datos de códigos de fallas
@@ -3060,6 +3087,7 @@
                 renderPhotos('despues');
                 renderPhotos('activo');
                 renderPhotos('lugar');
+                renderPhotos('permiso');
             }
 
             // Cerrar modal
@@ -3269,7 +3297,15 @@
                         lista.innerHTML = ordenes.map((orden) => {
                             const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
                             const coordinador = orden.datos.coordinador || 'Sin Coordinador';
-                            const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
+                            const tipoEvento = orden.datos.tipoEvento || '';
+
+                            let nombreOrden;
+                            if (tipoEvento === 'REVISION') {
+                                const numeroRevision = orden.datos.numeroRevision || '';
+                                nombreOrden = `${numeroConsignacion} - ${coordinador} - ${numeroRevision}`;
+                            } else {
+                                nombreOrden = `${numeroConsignacion} - ${coordinador}`;
+                            }
 
                             return `
                             <div class="orden-item">
@@ -3382,6 +3418,7 @@
                         renderPhotos('despues');
                         renderPhotos('activo');
                         renderPhotos('lugar');
+                        renderPhotos('permiso');
                     }
 
                     cerrarModal();
@@ -3398,7 +3435,7 @@
         initIndexedDB().catch(e => console.error('No se pudo inicializar IndexedDB:', e));
 
         // Generar y descargar PDF
-        function generarPDF() {
+        async function generarPDF() {
             try {
                 // Verificar popup blocker
                 let printWindow = window.open('', '_blank');
@@ -3409,16 +3446,36 @@
 
                 const form = document.getElementById('workOrderForm');
 
-                // Obtener logo base64
-                let logoBase64 = '';
-                try {
-                    const logoImg = document.querySelector('.logo-img');
-                    if (logoImg && logoImg.src) {
-                        logoBase64 = logoImg.src;
-                    }
-                } catch (e) {
-                    console.log('Logo no disponible, usando texto');
+                // Función para convertir imagen a base64
+                function imageToBase64(img) {
+                    return new Promise((resolve) => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth || img.width;
+                        canvas.height = img.naturalHeight || img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        resolve(canvas.toDataURL('image/png'));
+                    });
                 }
+
+                // Obtener logo base64 de forma asíncrona
+                async function getLogoBase64() {
+                    try {
+                        const logoImg = document.querySelector('.header img');
+                        if (logoImg && logoImg.src) {
+                            if (logoImg.src.startsWith('data:')) {
+                                return logoImg.src;
+                            }
+                            return await imageToBase64(logoImg);
+                        }
+                    } catch (e) {
+                        console.log('Logo no disponible');
+                    }
+                    return '';
+                }
+
+                // Obtener logo antes de generar el PDF
+                const logoBase64 = await getLogoBase64();
 
                 // Crear contenido HTML para el PDF
                 let html = `
@@ -3429,47 +3486,64 @@
                 <title>Orden de Trabajo - CEDENAR</title>
                 <style>
                     * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; }
-                    .header { text-align: center; border-bottom: 2px solid #1e3c72; padding-bottom: 15px; margin-bottom: 20px; }
-                    .header h1 { color: #1e3c72; font-size: 18px; margin-bottom: 5px; text-align: center; }
-                    .header p { color: #666; font-size: 11px; }
-                    .header-logo { width: 60px; height: 60px; margin: 0 auto 10px; }
-                    .header-logo img { width: 100%; height: 100%; object-fit: contain; }
-                    .section { margin-bottom: 20px; }
-                    .section-title { background: #1e3c72; color: white; padding: 8px 12px; font-weight: bold; margin-bottom: 10px; }
-                    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-                    .form-group { margin-bottom: 8px; }
-                    .form-group label { font-weight: bold; display: block; margin-bottom: 3px; color: #333; }
-                    .form-group p { border-bottom: 1px solid #ccc; padding-bottom: 3px; min-height: 18px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                    th, td { border: 1px solid #333; padding: 8px; text-align: left; font-size: 10px; }
-                    th { background: #f0f0f0; font-weight: bold; }
-                    .signature-section { display: flex; justify-content: space-around; margin-top: 30px; }
-                    .signature-box { text-align: center; width: 45%; }
-                    .signature-line { border-bottom: 1px solid #333; margin-top: 40px; width: 80%; margin-left: auto; margin-right: auto; }
-                    .photos-grid {
-                        display: grid;
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 15px;
-                        margin-top: 10px;
-                    }
-                    .photo-category { margin-bottom: 15px; page-break-inside: avoid; }
-                    .photo-title { margin-bottom: 8px; color: #333; }
-                    .photo-item {
+                    body { font-family: Arial, sans-serif; font-size: 11px; padding: 15px; background: transparent; }
+                    /* Marca de agua sutil en cada página */
+                    .watermark {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
                         width: 100%;
-                        aspect-ratio: 1;
-                        border: 3px solid #1e3c72;
-                        border-radius: 8px;
-                        overflow: hidden;
-                        background: #fff;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                        padding: 5px;
+                        height: 100%;
+                        pointer-events: none;
+                        z-index: 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                     }
-                    .photo-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
-                    .contact-info { margin-top: 20px; padding: 10px; background: #f5f5f5; text-align: center; font-size: 10px; }
+                    .watermark img {
+                        max-width: 70%;
+                        max-height: 70%;
+                        opacity: 0.07;
+                        object-fit: contain;
+                    }
+                    .header { text-align: center; border: 2px solid #1e3c72; padding: 15px; margin-bottom: 15px; background: #f8f9fa; position: relative; z-index: 1; }
+                    .header h1 { color: #1e3c72; font-size: 16px; margin-bottom: 5px; text-align: center; }
+                    .header p { color: #666; font-size: 10px; margin: 3px 0; }
+                    .header-logo { width: 50px; height: 50px; margin: 0 auto 10px; }
+                    .header-logo img { width: 100%; height: 100%; object-fit: contain; }
+                    .section { margin-bottom: 15px; border: 1px solid #1e3c72; position: relative; z-index: 1; }
+                    .section-title { background: #1e3c72; color: white; padding: 6px 10px; font-weight: bold; font-size: 12px; }
+                    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+                    .form-group { border: 1px solid #ccc; padding: 8px; background: white; }
+                    .form-group label { font-weight: bold; font-size: 9px; color: #333; display: block; margin-bottom: 4px; }
+                    .form-group p { border-bottom: 1px solid #999; padding-bottom: 2px; min-height: 16px; font-size: 10px; }
+                    .form-group.full { grid-column: span 3; }
+                    .form-group.half { grid-column: span 2; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    th, td { border: 1px solid #333; padding: 6px; text-align: left; font-size: 9px; }
+                    th { background: #e8e8e8; font-weight: bold; }
+                    .signature-section { display: flex; justify-content: space-around; margin-top: 20px; position: relative; z-index: 1; }
+                    .signature-box { text-align: center; width: 45%; border: 1px solid #333; padding: 15px; }
+                    .signature-line { border-bottom: 1px solid #333; margin-top: 30px; width: 80%; margin-left: auto; margin-right: auto; }
+                    .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+                    .photo-category { margin-bottom: 10px; page-break-inside: avoid; border: 1px solid #ccc; padding: 8px; position: relative; z-index: 1; }
+                    .photo-title { margin-bottom: 6px; color: #333; font-size: 10px; }
+                    .photo-item { width: 100%; aspect-ratio: 1; border: 2px solid #1e3c72; overflow: hidden; background: #fff; padding: 3px; }
+                    .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+                    .contact-info { margin-top: 15px; padding: 8px; background: #f5f5f5; text-align: center; font-size: 9px; border: 1px solid #ccc; position: relative; z-index: 1; }
+                    .field-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-bottom: 10px; }
+                    .field-box { border: 1px solid #333; padding: 6px; background: white; }
+                    .field-box label { font-weight: bold; font-size: 8px; display: block; margin-bottom: 2px; }
+                    .field-box p { border-bottom: 1px solid #999; font-size: 9px; min-height: 14px; }
+                    @media print {
+                        .watermark img {
+                            opacity: 0.05;
+                        }
+                    }
                 </style>
             </head>
             <body>
+                ${logoBase64 ? `<div class="watermark"><img src="${logoBase64}" alt="CEDENAR Watermark"></div>` : ''}
                 <div class="header">
                     ${logoBase64 ? `<div class="header-logo"><img src="${logoBase64}" alt="CEDENAR Logo" onerror="this.parentElement.style.display='none'"></div>` : ''}
                     <h1>ORDEN DE TRABAJO DISTRIBUIDOR</h1>
@@ -3478,40 +3552,59 @@
 
                 <div class="section">
                     <div class="section-title">1. PLANIFICACIÓN DEL EVENTO</div>
-                    <div class="form-grid">
-                        <div class="form-group"><label>Tipo de Evento:</label><p>${getRadioValue('tipoEvento')}</p></div>
-                        <div class="form-group"><label>Consignación No.:</label><p>${form.consignacion?.value || ''}</p></div>
-                        <div class="form-group"><label>Fecha Consignación:</label><p>${form.fechaConsignacion?.value || ''}</p></div>
-                        <div class="form-group"><label>Fecha Inicio Prog.:</label><p>${form.fechaInicioProg?.value || ''}</p></div>
-                        <div class="form-group"><label>Hora Inicio Prog.:</label><p>${form.horaInicioProg?.value || ''}</p></div>
-                        <div class="form-group"><label>Circuito:</label><p>${form.circuito?.value || ''}</p></div>
-                        <div class="form-group"><label>Zona:</label><p>${form.zona?.value || ''}</p></div>
-                        <div class="form-group"><label>Municipio:</label><p>${form.municipio?.value || ''}</p></div>
-                        <div class="form-group"><label>Dirección:</label><p>${form.direccion?.value || ''}</p></div>
-                        <div class="form-group"><label>Coordinador Asignado:</label><p>${form.coordinador?.value || ''}</p></div>
-                        <div class="form-group"><label>Tipo de Carga:</label><p>${getRadioValue('tipoCarga')}</p></div>
+                    <div class="field-row">
+                        <div class="field-box"><label>Tipo de Evento:</label><p>${getRadioValue('tipoEvento')}</p></div>
+                        <div class="field-box"><label>Fecha Inicio Prog.:</label><p>${form.fechaInicioProg?.value || ''}</p></div>
+                        <div class="field-box"><label>Hora Inicio Prog.:</label><p>${form.horaInicioProg?.value || ''}</p></div>
                     </div>
-                    <div class="form-group"><label>Descripción de Trabajos a Realizar:</label><p style="white-space:pre-wrap;">${form.descripcionTrabajos?.value || ''}</p></div>
-                    <div class="form-group"><label>Estructura más cercana:</label><p>${form.observaciones?.value || ''}</p></div>
+                    <div class="field-row">
+                        ${form.tipoEvento?.value === 'REVISION' ? `<div class="field-box"><label>Número de Revisión:</label><p>${form.numeroRevision?.value || ''}</p></div>` : '<div class="field-box"><label>Consignación No.:</label><p>' + (form.consignacion?.value || '') + '</p></div>'}
+                        <div class="field-box"><label>Fecha Consignación:</label><p>${form.fechaConsignacion?.value || ''}</p></div>
+                        <div class="field-box"><label>Circuito:</label><p>${form.circuito?.value || ''}</p></div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-box"><label>Zona:</label><p>${form.zona?.value || ''}</p></div>
+                        <div class="field-box" style="grid-column: span 2;"><label>Municipio:</label><p>${form.municipio?.value || ''}</p></div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-box" style="grid-column: span 2;"><label>Dirección:</label><p>${form.direccion?.value || ''}</p></div>
+                        <div class="field-box"><label>Tipo de Carga:</label><p>${getRadioValue('tipoCarga')}</p></div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field-box" style="grid-column: span 3;"><label>Coordinador Asignado:</label><p>${form.coordinador?.value || ''}</p></div>
+                    </div>
+                    <div style="padding: 8px; border: 1px solid #ccc; margin: 8px;">
+                        <label style="font-weight: bold; font-size: 9px; display: block; margin-bottom: 4px;">Descripción de Trabajos a Realizar:</label>
+                        <p style="min-height: 40px; border-bottom: 1px solid #999; font-size: 10px; white-space: pre-wrap;">${form.descripcionTrabajos?.value || ''}</p>
+                    </div>
+                    <div style="padding: 8px; border: 1px solid #ccc; margin: 0 8px 8px;">
+                        <label style="font-weight: bold; font-size: 9px; display: block; margin-bottom: 4px;">Estructura más cercana:</label>
+                        <p style="min-height: 20px; border-bottom: 1px solid #999; font-size: 10px;">${form.observaciones?.value || ''}</p>
+                    </div>
                 </div>
 
                 <div class="section">
                     <div class="section-title">2. EJECUCIÓN DEL TRABAJO</div>
-                    <div class="form-grid">
-                        <div class="form-group"><label>Fecha Inicio:</label><p>${form.fechaInicio?.value || ''}</p></div>
-                        <div class="form-group"><label>Fecha Finalización:</label><p>${form.fechaFinalizacion?.value || ''}</p></div>
+                    <div class="field-row">
+                        <div class="field-box"><label>Fecha Inicio:</label><p>${form.fechaInicio?.value || ''}</p></div>
+                        <div class="field-box"><label>Fecha Finalización:</label><p>${form.fechaFinalizacion?.value || ''}</p></div>
+                        <div class="field-box"></div>
                     </div>
-                    <div class="form-group"><label>Observaciones del Trabajo:</label><p>${form.observacionesEjecucion?.value || ''}</p></div>
+                    <div style="padding: 8px; border: 1px solid #ccc; margin: 8px;">
+                        <label style="font-weight: bold; font-size: 9px; display: block; margin-bottom: 4px;">Observaciones del Trabajo:</label>
+                        <p style="min-height: 40px; border-bottom: 1px solid #999; font-size: 10px;">${form.observacionesEjecucion?.value || ''}</p>
+                    </div>
                 </div>
 
                 <div class="section">
                     <div class="section-title">3. MATERIALES</div>
-                    <div class="form-grid">
-                        <div class="form-group"><label>Requisición Materiales No.:</label><p>${form.requisicionMateriales?.value || ''}</p></div>
-                        <div class="form-group"><label>Fecha:</label><p>${form.fechaRequisicion?.value || ''}</p></div>
+                    <div class="field-row">
+                        <div class="field-box"><label>Requisición Materiales No.:</label><p>${form.requisicionMateriales?.value || ''}</p></div>
+                        <div class="field-box"><label>Fecha:</label><p>${form.fechaRequisicion?.value || ''}</p></div>
+                        <div class="field-box"></div>
                     </div>
                     <table>
-                        <thead><tr><th>Descripción</th><th>Código</th><th>Cantidad</th></tr></thead>
+                        <thead><tr><th style="width:60%;">Descripción</th><th style="width:25%;">Código</th><th style="width:15%;">Cantidad</th></tr></thead>
                         <tbody>`;
 
             // Agregar materiales
@@ -3567,6 +3660,13 @@
                             </div>
                         </div>` : ''}
                         ${form.coordenadasLugar?.value ? `<p><strong>Coordenadas del Lugar:</strong> ${form.coordenadasLugar.value}</p>` : ''}
+                        ${photos.permiso.length > 0 ? `
+                        <div class="photo-category">
+                            <p class="photo-title"><strong>FOTOS PERMISO TRABAJO SEGURO EN ALTURA (${photos.permiso.length})</strong></p>
+                            <div class="photos-grid">
+                                ${photos.permiso.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto permiso"></div>`).join('')}
+                            </div>
+                        </div>` : ''}
                     </div>
                 </div>
 
@@ -3630,11 +3730,13 @@
                 photos.despues = [];
                 photos.activo = [];
                 photos.lugar = [];
+                photos.permiso = [];
                 renderPhotos('antes');
                 renderPhotos('durante');
                 renderPhotos('despues');
                 renderPhotos('activo');
                 renderPhotos('lugar');
+                renderPhotos('permiso');
                 // Reset tabs
                 showPhotoPanel('realizado');
                 // Agregar una fila de material vacía
@@ -3659,11 +3761,13 @@
                 photos.despues = [];
                 photos.activo = [];
                 photos.lugar = [];
+                photos.permiso = [];
                 renderPhotos('antes');
                 renderPhotos('durante');
                 renderPhotos('despues');
                 renderPhotos('activo');
                 renderPhotos('lugar');
+                renderPhotos('permiso');
                 showPhotoPanel('realizado');
                 alert('Orden eliminada');
             }
@@ -3701,17 +3805,42 @@
         function toggleRevisionMode() {
             const revisionRadio = document.getElementById('revision');
             const revisionFields = document.querySelectorAll('.revision-field');
+            const revisionFechaFields = document.querySelectorAll('.revision-fecha-field');
+            const numeroRevisionGroup = document.getElementById('numeroRevisionGroup');
 
-            if (revisionRadio.checked) {
+            if (revisionRadio && revisionRadio.checked) {
+                // Ocultar campos de consignación
                 revisionFields.forEach(field => {
-                    field.classList.add('hidden');
+                    field.style.display = 'none';
                 });
+                // Ocultar campos de fecha
+                revisionFechaFields.forEach(field => {
+                    field.style.display = 'none';
+                });
+                // Mostrar campo número de revisión
+                if (numeroRevisionGroup) {
+                    numeroRevisionGroup.style.display = 'block';
+                }
             } else {
+                // Mostrar campos de consignación
                 revisionFields.forEach(field => {
-                    field.classList.remove('hidden');
+                    field.style.display = '';
                 });
+                // Mostrar campos de fecha
+                revisionFechaFields.forEach(field => {
+                    field.style.display = '';
+                });
+                // Ocultar campo número de revisión
+                if (numeroRevisionGroup) {
+                    numeroRevisionGroup.style.display = 'none';
+                }
             }
         }
+
+        // Inicializar estado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleRevisionMode();
+        });
 
         // Actualizar nombres en firmas en tiempo real
         document.getElementById('nombreCoordinadorFirma').addEventListener('input', function() {
