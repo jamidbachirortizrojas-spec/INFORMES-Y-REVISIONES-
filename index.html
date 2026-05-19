@@ -2931,88 +2931,63 @@
             renderPhotos(category);
         }
 
-        // Abrir modal de órdenes guardadas
-        function verOrdenesGuardadas() {
-            const modal = document.getElementById('modalOrdenes');
-            const lista = document.getElementById('ordenesLista');
-            const ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
-
-            if (ordenes.length === 0) {
-                lista.innerHTML = `
-                    <div class="no-ordenes">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                        <p>No hay órdenes de trabajo guardadas</p>
-                    </div>
-                `;
-            } else {
-                lista.innerHTML = ordenes.map((orden, index) => {
-                    // Crear nombre descriptivo para la orden
-                    const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
-                    const coordinador = orden.datos.coordinador || 'Sin Coordinador';
-                    const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
-
-                    return `
-                    <div class="orden-item">
-                        <div class="orden-item-header">
-                            <h4>${nombreOrden}</h4>
-                            <span class="orden-item-fecha">${orden.fechaGuardado}</span>
-                        </div>
-                        <div class="orden-item-info">
-                            ${orden.datos.ciudad ? `<span><strong>Ciudad:</strong> ${orden.datos.ciudad}</span>` : ''}
-                        </div>
-                        <div class="orden-item-actions">
-                            <button class="btn-cargar" onclick="cargarOrden(${orden.id})">Cargar</button>
-                            <button class="btn-eliminar-lista" onclick="eliminarOrdenGuardada(${orden.id})">Eliminar</button>
-                        </div>
-                    </div>
-                `}).join('');
-            }
-
-            modal.classList.add('active');
-        }
-
         // Filtrar órdenes según búsqueda
-        function filtrarOrdenes() {
-            const textoBusqueda = document.getElementById('buscadorOrdenes').value.toLowerCase();
-            const lista = document.getElementById('ordenesLista');
-            const ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
-            const ordenesFiltradas = ordenes.filter(orden => {
-                const consignacion = (orden.datos.consignacion || '').toLowerCase();
-                const coordinador = (orden.datos.coordinador || '').toLowerCase();
-                const ciudad = (orden.datos.ciudad || '').toLowerCase();
-                return consignacion.includes(textoBusqueda) ||
-                       coordinador.includes(textoBusqueda) ||
-                       ciudad.includes(textoBusqueda);
-            });
+        async function filtrarOrdenes() {
+            try {
+                const textoBusqueda = document.getElementById('buscadorOrdenes').value.toLowerCase();
+                const lista = document.getElementById('ordenesLista');
 
-            if (ordenesFiltradas.length === 0) {
-                lista.innerHTML = `
-                    <div class="no-ordenes">
-                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                        <p>No se encontraron órdenes con "${textoBusqueda}"</p>
-                    </div>
-                `;
-            } else {
-                lista.innerHTML = ordenesFiltradas.map((orden, index) => {
-                    const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
-                    const coordinador = orden.datos.coordinador || 'Sin Coordinador';
-                    const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
+                if (!db) {
+                    await initIndexedDB();
+                }
 
-                    return `
-                    <div class="orden-item">
-                        <div class="orden-item-header">
-                            <h4>${nombreOrden}</h4>
-                            <span class="orden-item-fecha">${orden.fechaGuardado}</span>
-                        </div>
-                        <div class="orden-item-info">
-                            ${orden.datos.ciudad ? `<span><strong>Ciudad:</strong> ${orden.datos.ciudad}</span>` : ''}
-                        </div>
-                        <div class="orden-item-actions">
-                            <button class="btn-cargar" onclick="cargarOrden(${orden.id})">Cargar</button>
-                            <button class="btn-eliminar-lista" onclick="eliminarOrdenGuardada(${orden.id})">Eliminar</button>
-                        </div>
-                    </div>
-                `}).join('');
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll();
+
+                request.onsuccess = function() {
+                    const ordenes = request.result;
+                    const ordenesFiltradas = ordenes.filter(orden => {
+                        const consignacion = (orden.datos.consignacion || '').toLowerCase();
+                        const coordinador = (orden.datos.coordinador || '').toLowerCase();
+                        const ciudad = (orden.datos.ciudad || '').toLowerCase();
+                        return consignacion.includes(textoBusqueda) ||
+                               coordinador.includes(textoBusqueda) ||
+                               ciudad.includes(textoBusqueda);
+                    });
+
+                    if (ordenesFiltradas.length === 0) {
+                        lista.innerHTML = `
+                            <div class="no-ordenes">
+                                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                <p>No se encontraron órdenes con "${textoBusqueda}"</p>
+                            </div>
+                        `;
+                    } else {
+                        lista.innerHTML = ordenesFiltradas.map((orden) => {
+                            const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
+                            const coordinador = orden.datos.coordinador || 'Sin Coordinador';
+                            const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
+
+                            return `
+                            <div class="orden-item">
+                                <div class="orden-item-header">
+                                    <h4>${nombreOrden}</h4>
+                                    <span class="orden-item-fecha">${orden.fechaGuardado}</span>
+                                </div>
+                                <div class="orden-item-info">
+                                    ${orden.datos.ciudad ? `<span><strong>Ciudad:</strong> ${orden.datos.ciudad}</span>` : ''}
+                                </div>
+                                <div class="orden-item-actions">
+                                    <button class="btn-cargar" onclick="cargarOrden(${orden.id})">Cargar</button>
+                                    <button class="btn-eliminar-lista" onclick="confirmarEliminarOrden(${orden.id})">Eliminar</button>
+                                </div>
+                            </div>
+                        `}).join('');
+                    }
+                };
+            } catch (error) {
+                console.error('Error:', error);
             }
         }
 
@@ -3105,17 +3080,111 @@
             verOrdenesGuardadas(); // Actualizar la lista
         }
 
-        // Guardar orden en localStorage y generar PDF
-        function guardarOrden() {
+        // IndexedDB para almacenar órdenes con fotos (soporta hasta 500MB+)
+        let db;
+        const DB_NAME = 'CEDENAROrdenesDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'ordenes';
+
+        // Inicializar IndexedDB
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = function(e) {
+                    console.error('Error al abrir IndexedDB:', e);
+                    reject(e);
+                };
+
+                request.onsuccess = function(e) {
+                    db = e.target.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = function(e) {
+                    const database = e.target.result;
+                    if (!database.objectStoreNames.contains(STORE_NAME)) {
+                        database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+
+        // Comprimir imagen a base64 con calidad reducida
+        function compressImage(file, maxWidth = 1200, quality = 0.6) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Crear canvas para redimensionar
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Redimensionar si es necesario
+                        if (width > maxWidth) {
+                            height = (height * maxWidth) / width;
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Convertir a base64 con compresión
+                        const compressedData = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressedData);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Guardar orden en IndexedDB
+        async function guardarOrden() {
             try {
+                // Inicializar DB si no existe
+                if (!db) {
+                    await initIndexedDB();
+                }
+
                 const form = document.getElementById('workOrderForm');
-                const formData = new FormData(form);
+
+                // Comprimir fotos antes de guardar
+                const fotosComprimidas = {};
+                for (const category in photos) {
+                    fotosComprimidas[category] = [];
+                    for (const photo of photos[category]) {
+                        // Si la foto no está comprimida, comprimir
+                        if (photo.data && photo.data.length > 100000) {
+                            // Crear un blob temporal para comprimir
+                            const response = await fetch(photo.data);
+                            const blob = await response.blob();
+                            const compressed = await compressImage(blob);
+                            fotosComprimidas[category].push({
+                                id: photo.id,
+                                data: compressed,
+                                name: photo.name,
+                                date: photo.date,
+                                location: photo.location || ''
+                            });
+                        } else {
+                            fotosComprimidas[category].push(photo);
+                        }
+                    }
+                }
 
                 const ordenData = {
                     id: Date.now(),
                     fechaGuardado: new Date().toLocaleString(),
                     datos: {},
-                    fotos: photos
+                    fotos: fotosComprimidas
                 };
 
                 // Recoger todos los campos del formulario
@@ -3153,17 +3222,180 @@
                     }
                 });
 
-                // Guardar en localStorage
-                let ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
-                ordenes.push(ordenData);
-                localStorage.setItem('ordenesTrabajo', JSON.stringify(ordenes));
+                // Guardar en IndexedDB
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                store.add(ordenData);
 
-                alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.');
+                transaction.oncomplete = function() {
+                    alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.\n\nAlmacenamiento: IndexedDB (alta capacidad)');
+                };
+
+                transaction.onerror = function(e) {
+                    console.error('Error al guardar en IndexedDB:', e);
+                    alert('Error al guardar la orden. Intente de nuevo.');
+                };
             } catch (error) {
                 console.error('Error al guardar:', error);
                 alert('Error al guardar la orden: ' + error.message);
             }
         }
+
+        // Ver órdenes guardadas desde IndexedDB
+        async function verOrdenesGuardadas() {
+            try {
+                const modal = document.getElementById('modalOrdenes');
+                const lista = document.getElementById('ordenesLista');
+
+                if (!db) {
+                    await initIndexedDB();
+                }
+
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll();
+
+                request.onsuccess = function() {
+                    const ordenes = request.result;
+
+                    if (ordenes.length === 0) {
+                        lista.innerHTML = `
+                            <div class="no-ordenes">
+                                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                <p>No hay órdenes de trabajo guardadas</p>
+                            </div>
+                        `;
+                    } else {
+                        lista.innerHTML = ordenes.map((orden) => {
+                            const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
+                            const coordinador = orden.datos.coordinador || 'Sin Coordinador';
+                            const nombreOrden = `${numeroConsignacion} - ${coordinador}`;
+
+                            return `
+                            <div class="orden-item">
+                                <div class="orden-item-header">
+                                    <h4>${nombreOrden}</h4>
+                                    <span class="orden-item-fecha">${orden.fechaGuardado}</span>
+                                </div>
+                                <div class="orden-item-info">
+                                    ${orden.datos.ciudad ? `<span><strong>Ciudad:</strong> ${orden.datos.ciudad}</span>` : ''}
+                                </div>
+                                <div class="orden-item-actions">
+                                    <button class="btn-cargar" onclick="cargarOrden(${orden.id})">Cargar</button>
+                                    <button class="btn-eliminar-lista" onclick="confirmarEliminarOrden(${orden.id})">Eliminar</button>
+                                </div>
+                            </div>
+                        `}).join('');
+                    }
+
+                    modal.classList.add('active');
+                };
+
+                request.onerror = function() {
+                    lista.innerHTML = '<div class="no-ordenes"><p>Error al cargar órdenes</p></div>';
+                    modal.classList.add('active');
+                };
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Confirmar eliminación de orden
+        function confirmarEliminarOrden(idOrden) {
+            if (confirm('¿Está seguro de eliminar esta orden? Esta acción no se puede deshacer.')) {
+                eliminarOrdenGuardada(idOrden);
+            }
+        }
+
+        // Eliminar orden de IndexedDB
+        async function eliminarOrdenGuardada(idOrden) {
+            try {
+                if (!db) {
+                    await initIndexedDB();
+                }
+
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                store.delete(idOrden);
+
+                transaction.oncomplete = function() {
+                    verOrdenesGuardadas();
+                };
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar orden desde IndexedDB
+        async function cargarOrden(idOrden) {
+            try {
+                if (!db) {
+                    await initIndexedDB();
+                }
+
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(idOrden);
+
+                request.onsuccess = function() {
+                    const orden = request.result;
+                    if (!orden) {
+                        alert('Orden no encontrada');
+                        return;
+                    }
+
+                    // Llenar los campos del formulario
+                    const datos = orden.datos;
+                    for (const key in datos) {
+                        const input = document.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            if (input.type === 'radio' || input.type === 'checkbox') {
+                                input.checked = (input.value === datos[key]);
+                            } else {
+                                input.value = datos[key];
+                            }
+                        }
+                    }
+
+                    // Cargar materiales
+                    if (datos.materiales && datos.materiales.length > 0) {
+                        const tbody = document.getElementById('materialsBody');
+                        tbody.innerHTML = '';
+
+                        datos.materiales.forEach(mat => {
+                            addMaterialRow();
+                            const rows = tbody.querySelectorAll('tr');
+                            const lastRow = rows[rows.length - 1];
+                            lastRow.querySelector('input[name="materialDescripcion[]"]').value = mat.descripcion || '';
+                            lastRow.querySelector('input[name="materialCodigo[]"]').value = mat.codigo || '';
+                            lastRow.querySelector('input[name="materialCantidad[]"]').value = mat.cantidad || '';
+                        });
+                    }
+
+                    // Cargar fotos
+                    if (orden.fotos) {
+                        Object.keys(orden.fotos).forEach(key => {
+                            photos[key] = orden.fotos[key] || [];
+                        });
+                        renderPhotos('antes');
+                        renderPhotos('durante');
+                        renderPhotos('despues');
+                        renderPhotos('activo');
+                        renderPhotos('lugar');
+                    }
+
+                    cerrarModal();
+                    alert('Orden cargada correctamente');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al cargar la orden');
+            }
+        }
+
+        // Inicializar IndexedDB al cargar la página
+        initIndexedDB().catch(e => console.error('No se pudo inicializar IndexedDB:', e));
 
         // Generar y descargar PDF
         function generarPDF() {
