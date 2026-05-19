@@ -251,10 +251,13 @@
             font-weight: bold;
             color: #667eea;
             min-width: 80px;
+            flex-shrink: 0;
         }
 
         .combobox-item .descripcion {
             color: #555;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .combobox-list::-webkit-scrollbar {
@@ -544,6 +547,167 @@
             color: #1e3c72;
         }
 
+        /* Modal para ver órdenes guardadas */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header h3 {
+            color: #1e3c72;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: #c0392b;
+        }
+
+        .ordenes-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .orden-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .orden-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .orden-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .orden-item h4 {
+            margin: 0;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+
+        .orden-item-fecha {
+            color: #666;
+            font-size: 0.85em;
+        }
+
+        .orden-item-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .orden-item-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .orden-item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .orden-item-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cargar {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-cargar:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-eliminar-lista {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-eliminar-lista:hover {
+            background: #c0392b;
+        }
+
+        .no-ordenes {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-ordenes svg {
+            width: 80px;
+            height: 80px;
+            fill: #ccc;
+            margin-bottom: 15px;
+        }
+
         .signature-section {
             display: grid;
             grid-template-columns: 1fr;
@@ -657,6 +821,252 @@
 
         .revision-field.hidden {
             display: none !important;
+        }
+
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .header p {
+                font-size: 0.95em;
+            }
+
+            .logo-container {
+                flex-direction: column;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .form-section {
+                padding: 20px 15px;
+            }
+
+            .section-title {
+                font-size: 1.1em;
+                padding: 12px 15px;
+                margin: -20px -15px 15px -15px;
+                border-radius: 0;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 0;
+            }
+
+            .form-group label {
+                font-size: 0.9em;
+            }
+
+            input, select, textarea {
+                font-size: 16px; /* Evita zoom en iOS */
+                padding: 10px 12px;
+            }
+
+            .radio-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .radio-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .combobox-container {
+                position: relative;
+            }
+
+            .combobox-list {
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .combobox-item {
+                padding: 10px 12px;
+                font-size: 0.9em;
+                gap: 8px;
+            }
+
+            .combobox-item .codigo {
+                min-width: 70px;
+                max-width: 80px;
+                font-size: 0.85em;
+                flex-shrink: 0;
+            }
+
+            .combobox-item .descripcion {
+                font-size: 0.85em;
+                word-break: break-word;
+                overflow-wrap: break-word;
+            }
+
+            .materials-table {
+                font-size: 0.85em;
+            }
+
+            .materials-table th,
+            .materials-table td {
+                padding: 8px 5px;
+            }
+
+            .materials-table input {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .photo-tabs {
+                flex-direction: column;
+            }
+
+            .photo-tab {
+                width: 100%;
+                text-align: center;
+            }
+
+            .photo-upload-area {
+                padding: 20px 15px;
+            }
+
+            .photo-upload-area p {
+                font-size: 0.85em;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+            }
+
+            .signature-section {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .signature-box {
+                width: 100%;
+            }
+
+            #signatureCanvas {
+                width: 100%;
+                height: 120px;
+            }
+
+            .contact-info {
+                padding: 15px;
+                font-size: 0.8em;
+            }
+
+            .codigo-material-box {
+                padding: 10px;
+            }
+
+            .codigo-material-box h4 {
+                font-size: 0.95em;
+            }
+
+            /* Mejorar botones de foto en móvil */
+            .photo-upload-area button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .photo-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .photo-item {
+                aspect-ratio: 1;
+            }
+
+            /* Mejorar selectores de fotos */
+            .photo-upload-area > div {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .photo-upload-area input[type="file"] {
+                width: 100%;
+            }
+        }
+
+        /* Ajustes para tablets */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+        }
+
+        /* Responsive para modal en móvil */
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 20px 15px;
+                width: 98%;
+                max-height: 95vh;
+            }
+
+            .modal-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .ordenes-lista {
+                max-height: 60vh;
+            }
+
+            .orden-item {
+                padding: 12px 15px;
+            }
+
+            .orden-item-info {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .orden-item-actions {
+                flex-direction: column;
+            }
+
+            .orden-item-actions button {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -1194,6 +1604,10 @@
 
             <!-- Acciones del Formulario -->
             <div class="actions">
+                <button type="button" class="btn btn-secondary" onclick="verOrdenesGuardadas()">
+                    <svg viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    Ver Órdenes
+                </button>
                 <button type="button" class="btn btn-success" onclick="guardarOrden()">
                     <svg viewBox="0 0 24 24" fill="white"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
                     Guardar Orden
@@ -1216,6 +1630,19 @@
                 </button>
             </div>
         </form>
+
+        <!-- Modal para ver órdenes guardadas -->
+        <div class="modal" id="modalOrdenes">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Órdenes de Trabajo Guardadas</h3>
+                    <button class="modal-close" onclick="cerrarModal()">&times;</button>
+                </div>
+                <div class="ordenes-lista" id="ordenesLista">
+                    <!-- Las órdenes se mostrarán aquí -->
+                </div>
+            </div>
+        </div>
 
         <div class="contact-info">
             <p><strong>CEDENAR S.A.E.S.P.</strong> - Centrales Eléctricas de Nariño S.A.E.S.P.</p>
@@ -1449,7 +1876,7 @@
             {codigo: '126121662008', descripcion: 'CABLE ALUMINIO AA8000 2AWG MONOPOLAR AISLADO XLPE 600V 90°C NEGRO'},
             {codigo: '126121662009', descripcion: 'CABLE ALUMINIO AISLADO 6 NEGRO'},
             {codigo: '126121665001', descripcion: 'CABLE AAC 2X1/0AWG AAC 123.3KCMIL TRIPLEX AISLADO XLPE/XLPE 600V 90°C'},
-            {codigo: '126121818001', descripcion: 'CABLE IULMINACION # 10 105" NEGRO (AUTOMOVIL)'},
+            {codigo: '126121818001', descripcion: 'CABLE IULMINACION # 10 105 NEGRO (AUTOMOVIL)'},
             {codigo: '126101404001', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.11'},
             {codigo: '126101404002', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.21'},
             {codigo: '126101404003', descripcion: 'ESCOBILLA DE CARBON ESTUDIO NO.10'},
@@ -1477,8 +1904,8 @@
             {codigo: '130102906006', descripcion: 'POSTE FIBRA DE VIDRIO 16M 1050KGF MONOLITICO'},
             {codigo: '130102906008', descripcion: 'POSTE FIBRA DE VIDRIO 8M 510KGF SECCIONADO'},
             // Serie 131 - Accesorios
-            {codigo: '131151901001', descripcion: 'HEBILLA ACERO INOXIDABLE 3/4\"'},
-            {codigo: '131151901002', descripcion: 'HEBILLA ACERO INOXIDABLE 5/8\"'},
+            {codigo: '131151901001', descripcion: 'HEBILLA ACERO INOXIDABLE 3/4'},
+            {codigo: '131151901002', descripcion: 'HEBILLA ACERO INOXIDABLE 5/8'},
             {codigo: '131151904001', descripcion: 'AMARRAS PLASTICASDE 20 CMS 100 UNIDADES'},
             {codigo: '131151904002', descripcion: 'AMARRAS PLASTICAS 10CM PAQUETE X 100UND'},
             {codigo: '131151904003', descripcion: 'AMARRAS PLASTICAS 30CM PAQUETE X 100 UND'},
@@ -1487,19 +1914,19 @@
             {codigo: '131159104007', descripcion: 'AMARRAS PLASTICAS 35CM PAQUETE X 100UND'},
             {codigo: '131159104008', descripcion: 'AMARRAS PLASTICAS 20CM PAQUETE X100UND NEGRO'},
             {codigo: '131159104010', descripcion: 'AMARRAS PLASTICAS 55 CM PAQUETE X 100UND'},
-            {codigo: '131161501001', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2\" X 1 1/2\"'},
-            {codigo: '131161501002', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2\" X 6\"'},
-            {codigo: '131161502001', descripcion: 'ESPARRAGO 5/8\" X 10\" GALVANIZADO CON TUERCA Y ARANDELA'},
-            {codigo: '131161502002', descripcion: 'ESPARRAGO 5/8\" X 12\" GALVANIZADO CON TUERCA Y ARANDELA'},
-            {codigo: '131161502003', descripcion: 'ESPARRAGO 5/8\" X 14\" GALVANIZADO CON TUERCA Y ARANDELA'},
-            {codigo: '131161502004', descripcion: 'ESPARRAGO 5/8\" X 8\" GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161501001', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2 X 1 1/2'},
+            {codigo: '131161501002', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2 X 6'},
+            {codigo: '131161502001', descripcion: 'ESPARRAGO 5/8 X 10 GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161502002', descripcion: 'ESPARRAGO 5/8 X 12 GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161502003', descripcion: 'ESPARRAGO 5/8 X 14 GALVANIZADO CON TUERCA Y ARANDELA'},
+            {codigo: '131161502004', descripcion: 'ESPARRAGO 5/8 X 8 GALVANIZADO CON TUERCA Y ARANDELA'},
             {codigo: '131161520007', descripcion: 'TORNILLO EXAGONAL'},
-            {codigo: '131161522001', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 10\" ABIERTO'},
-            {codigo: '131161522002', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 10\" CERRADO'},
-            {codigo: '131161522003', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 12\" CERRADO'},
-            {codigo: '131161522004', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 4\" CERRADO'},
-            {codigo: '131161522005', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 8\" ABIERTO'},
-            {codigo: '131161522006', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8\" X 8\" CERRADO'},
+            {codigo: '131161522001', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8 X 10 ABIERTO'},
+            {codigo: '131161522002', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8 X 10 CERRADO'},
+            {codigo: '131161522003', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8 X 12 CERRADO'},
+            {codigo: '131161522004', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8 X 4 CERRADO'},
+            {codigo: '131161522005', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8 X 8 ABIERTO'},
+            {codigo: '131161522006', descripcion: 'TORNILLO CANCAMO MACHO ACERO FORIADO C15 5/8 X 8 CERRADO'},
             {codigo: '131161522008', descripcion: 'TORNILLO, TUERCA Y ARANDELA'},
             {codigo: '131161531006', descripcion: 'TONNILO MEDIANO PARA TAPABORNERA'},
             {codigo: '131161531007', descripcion: 'TORNILLOS, TUERCAS, WASA. 10MM'},
@@ -1508,27 +1935,27 @@
             {codigo: '131161612002', descripcion: 'ESPIGO CORTO PARA AISLADOR TIPO PIN 6£ X 1 1/2£ X 3/4£ ROSCA 1£ CRUCETA METALICA'},
             {codigo: '131161612003', descripcion: 'ESPIGO EXTREMO POSTE AISLADOR TIPO PIN 508MM ROSCA 1£'},
             {codigo: '131161612005', descripcion: 'ESPIGO EXTREMO POSTE AISLADOR TIPO POSTE 610MM ROSCA 3/4\''},
-            {codigo: '131161711001', descripcion: 'TUERCA DE OJO ALARGADA ACERO GALVANIZADO 5/8\"'},
-            {codigo: '131161801001', descripcion: 'ARANDELA PRESION 1/2\" ACERO GALVANIZADO'},
-            {codigo: '131161801002', descripcion: 'ARANDELA PRESION 5/8\" ACERO GALVANIZADO'},
-            {codigo: '131161807001', descripcion: 'ARANDELA PLANA CUADRADA 2\" X 2\" X 1/4\" DIAMETRO 5/8\"'},
-            {codigo: '131161807002', descripcion: 'ARANDELA PLANA CUADRADA 4\' X 4\' X 1/4\". DIAMETRO 5/8\"'},
-            {codigo: '131161807003', descripcion: 'ARANDELA PLANA REDONDA 1/2\" ACERO GALVANIZADO'},
-            {codigo: '131161807005', descripcion: 'ARANDELA PLANA REDONDA 5/8\" ACERO GALVANIZADO'},
-            {codigo: '131162107001', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 10\"'},
-            {codigo: '131162107002', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 12\"'},
-            {codigo: '131162107003', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 14\"'},
-            {codigo: '131162107005', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8\" X 8\"'},
-            {codigo: '131162107006', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2\" X 1 1/2\"'},
+            {codigo: '131161711001', descripcion: 'TUERCA DE OJO ALARGADA ACERO GALVANIZADO 5/8'},
+            {codigo: '131161801001', descripcion: 'ARANDELA PRESION 1/2 ACERO GALVANIZADO'},
+            {codigo: '131161801002', descripcion: 'ARANDELA PRESION 5/8 ACERO GALVANIZADO'},
+            {codigo: '131161807001', descripcion: 'ARANDELA PLANA CUADRADA 2 X 2 X 1/4 DIAMETRO 5/8'},
+            {codigo: '131161807002', descripcion: 'ARANDELA PLANA CUADRADA 4 X 4 X 1/4. DIAMETRO 5/8'},
+            {codigo: '131161807003', descripcion: 'ARANDELA PLANA REDONDA 1/2 ACERO GALVANIZADO'},
+            {codigo: '131161807005', descripcion: 'ARANDELA PLANA REDONDA 5/8 ACERO GALVANIZADO'},
+            {codigo: '131162107001', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8 X 10'},
+            {codigo: '131162107002', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8 X 12'},
+            {codigo: '131162107003', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8 X 14'},
+            {codigo: '131162107005', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 5/8 X 8'},
+            {codigo: '131162107006', descripcion: 'PERNO DE EXPANSION ACERO GALVANIZADO 1/2 X 1 1/2'},
             {codigo: '131162108001', descripcion: 'BLOQUE DE ANCLAJE DE CONCRETO 300MM X 300MM X 150MM'},
             {codigo: '131162313001', descripcion: 'KIT PARA MANTENIMIENTO LOCATIVO'},
-            {codigo: '131162404007', descripcion: 'GRAPA ALA SENCILLA DE ACERO 1\''},
+            {codigo: '131162404007', descripcion: 'GRAPA ALA SENCILLA DE ACERO 1'},
             {codigo: '131162405002', descripcion: 'TENSOR O GRAPA DE ACOMETIDA PARA CABLE CONCENTRICO 2X6'},
             {codigo: '131162409001', descripcion: 'PASADOR TRAPECIO DE EMBRAGUE'},
-            {codigo: '131162419001', descripcion: 'ESLABON EN U (GRILLETE) 5/8\" FORIADO GALVANIZADO'},
+            {codigo: '131162419001', descripcion: 'ESLABON EN U (GRILLETE) 5/8 FORIADO GALVANIZADO'},
             {codigo: '131162504002', descripcion: 'BRAZO PARA RETENIDA ACERO TIPO GUITARRA'},
-            {codigo: '131162805001', descripcion: 'GUARDACABO ACERO GALVANIZADO 1/2\"'},
-            {codigo: '131162805002', descripcion: 'GUARDACABO ACERO GALVANIZADO 3/8\"'},
+            {codigo: '131162805001', descripcion: 'GUARDACABO ACERO GALVANIZADO 1/2'},
+            {codigo: '131162805002', descripcion: 'GUARDACABO ACERO GALVANIZADO 3/8'},
             {codigo: '131163202002', descripcion: 'CHAVETA'},
             {codigo: '131163202003', descripcion: 'ARANDELOS CHAVETA HAUSING'},
             {codigo: '131163202004', descripcion: 'CHAVETAS DE TUERCAS DE PUNTA DE CACHO'},
@@ -1547,8 +1974,8 @@
             {codigo: '131201502006', descripcion: 'CINTA ELECTRICA AISLANTE VINILO TEMFLEX'},
             {codigo: '131201502008', descripcion: 'CINTA AISLANTE 20 YARDAS NEGRA'},
             {codigo: '131201510002', descripcion: 'CINTA TEFLON'},
-            {codigo: '131201521001', descripcion: 'CINTA ACERO INOXIDABLE 3/4\"'},
-            {codigo: '131201521002', descripcion: 'CINTA BANDIT 5/8\"'},
+            {codigo: '131201521001', descripcion: 'CINTA ACERO INOXIDABLE 3/4'},
+            {codigo: '131201521002', descripcion: 'CINTA BANDIT 5/8'},
             {codigo: '131201534001', descripcion: 'CINTA AUTOFUNDENTE'},
             {codigo: '131201623004', descripcion: 'ADHESIVO DE CONTACTO BOXER'},
             {codigo: '131411704002', descripcion: 'SELLO DE CAUCHO ORRING'},
@@ -1951,8 +2378,8 @@
             {codigo: '226101740001', descripcion: 'INYECTORES'},
             {codigo: '226102906007', descripcion: 'POSTE FIBRA DE VIDRO 8M 510KGF MONOLITICO'},
             {codigo: '226111601001', descripcion: 'RADIADOR INTERCOOLER TANQUE DE NIVELACIÓN DE FABRICACIÓN NACIONA'},
-            {codigo: '226121540001', descripcion: 'CABLE ACERO GALVANIZADO 1/4\" EXTRA ALTA RESISTENCIA'},
-            {codigo: '226121540002', descripcion: 'CABLE ACERO GALVANIZADO 3/8\" EXTRA ALTA RESISTENCIA'},
+            {codigo: '226121540001', descripcion: 'CABLE ACERO GALVANIZADO 1/4 EXTRA ALTA RESISTENCIA'},
+            {codigo: '226121540002', descripcion: 'CABLE ACERO GALVANIZADO 3/8 EXTRA ALTA RESISTENCIA'},
             {codigo: '226121613001', descripcion: 'CABLE ACSR 1/0AWG RAVEN MONOPOLAR CUBIERTO XLPE/HDPE 15KV 90°C NEGRO/GRIS'},
             {codigo: '226121644001', descripcion: 'CABLE AAC 750KCMIL PETUNIA MONOPOLAR DESNUDO'},
             {codigo: '226121644002', descripcion: 'CABLE ACSR 1/0AWG RAVEN MONOPOLAR DESNUDO'},
@@ -2086,7 +2513,7 @@
             // Medidores serie 256
             {codigo: '256101522002', descripcion: 'SILLA INTERLOCUTORA ASIENTO Y ESPALDAR FIOS EN POLIPROPILENO TAPIZADO EN SILVERTEX 4 PATAS ESTRUCTURA COLOR NEGRO'},
             // Medidores serie 326
-            {codigo: '326121540001', descripcion: 'CABLE ACERO GALVANIZADO 1/4\" EXTRA ALTA RESISTENCIA'},
+            {codigo: '326121540001', descripcion: 'CABLE ACERO GALVANIZADO 1/4 EXTRA ALTA RESISTENCIA'},
             // Medidores serie 339
             {codigo: '339121304001', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR MONOFASICO 120VCA SIN CORTE'},
             {codigo: '339121304002', descripcion: 'CAJA HERMETICA POLIMERICA PARA MEDIDOR POLIFASICO 120/240VCA SIN CORTE'},
@@ -2170,7 +2597,7 @@
                         html += `<div class="combobox-category">${item.categoria}</div>`;
                         categoriaActual = item.categoria;
                     }
-                    html += `<div class="combobox-item" onclick="seleccionarCodigoFalla('${item.codigo}', '${item.descripcion.replace(/'/g, "\\'")}')">
+                    html += `<div class="combobox-item" onclick="seleccionarCodigoFalla('${item.codigo}', &quot;${item.descripcion.replace(/"/g, '&quot;').replace(/'/g, "\\'")}&quot;)">
                         <span class="codigo">${item.codigo}</span>
                         <span class="descripcion">${item.descripcion}</span>
                     </div>`;
@@ -2200,7 +2627,7 @@
                 const matches = showAll || codigoMatch || descMatch;
 
                 if (matches) {
-                    html += `<div class="combobox-item" onclick="seleccionarMaterial('${item.codigo}', '${item.descripcion.replace(/'/g, "\\'")}')">
+                    html += `<div class="combobox-item" onclick="seleccionarMaterial('${item.codigo}', &quot;${item.descripcion.replace(/"/g, '&quot;').replace(/'/g, "\\'")}&quot;)">
                         <span class="codigo">${item.codigo}</span>
                         <span class="descripcion">${item.descripcion}</span>
                     </div>`;
@@ -2482,6 +2909,135 @@
         function deletePhoto(category, photoId) {
             photos[category] = photos[category].filter(p => p.id !== photoId);
             renderPhotos(category);
+        }
+
+        // Abrir modal de órdenes guardadas
+        function verOrdenesGuardadas() {
+            const modal = document.getElementById('modalOrdenes');
+            const lista = document.getElementById('ordenesLista');
+            const ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
+
+            if (ordenes.length === 0) {
+                lista.innerHTML = `
+                    <div class="no-ordenes">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                        <p>No hay órdenes de trabajo guardadas</p>
+                    </div>
+                `;
+            } else {
+                lista.innerHTML = ordenes.map((orden, index) => {
+                    // Crear nombre descriptivo para la orden
+                    const numeroOrdenTrabajo = orden.datos.ordenTrabajo || 'Sin Número';
+                    const coordinador = orden.datos.coordinador || 'Sin Coordinador';
+                    const nombreOrden = `${numeroOrdenTrabajo} - ${coordinador}`;
+
+                    return `
+                    <div class="orden-item">
+                        <div class="orden-item-header">
+                            <h4>${nombreOrden}</h4>
+                            <span class="orden-item-fecha">${orden.fechaGuardado}</span>
+                        </div>
+                        <div class="orden-item-info">
+                            ${orden.datos.ciudad ? `<span><strong>Ciudad:</strong> ${orden.datos.ciudad}</span>` : ''}
+                        </div>
+                        <div class="orden-item-actions">
+                            <button class="btn-cargar" onclick="cargarOrden(${orden.id})">Cargar</button>
+                            <button class="btn-eliminar-lista" onclick="eliminarOrdenGuardada(${orden.id})">Eliminar</button>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('modalOrdenes').classList.remove('active');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modalOrdenes').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('modalOrdenes').classList.remove('active');
+            }
+        });
+
+        // Cargar orden guardada en el formulario
+        function cargarOrden(idOrden) {
+            const ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
+            const orden = ordenes.find(o => o.id === idOrden);
+
+            if (!orden) {
+                alert('Orden no encontrada');
+                return;
+            }
+
+            // Llenar los campos del formulario
+            const datos = orden.datos;
+            for (const key in datos) {
+                const input = document.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        input.checked = (input.value === datos[key]);
+                    } else {
+                        input.value = datos[key];
+                    }
+                }
+            }
+
+            // Cargar materiales
+            if (datos.materiales && datos.materiales.length > 0) {
+                // Limpiar filas existentes
+                const tbody = document.getElementById('materialsBody');
+                tbody.innerHTML = '';
+
+                // Agregar filas con los materiales guardados
+                datos.materiales.forEach(mat => {
+                    addMaterialRow();
+                    const rows = tbody.querySelectorAll('tr');
+                    const lastRow = rows[rows.length - 1];
+                    lastRow.querySelector('input[name="materialDescripcion[]"]').value = mat.descripcion || '';
+                    lastRow.querySelector('input[name="materialCodigo[]"]').value = mat.codigo || '';
+                    lastRow.querySelector('input[name="materialCantidad[]"]').value = mat.cantidad || '';
+                });
+            }
+
+            // Cargar fotos
+            if (orden.fotos) {
+                Object.keys(orden.fotos).forEach(key => {
+                    photos[key] = orden.fotos[key] || [];
+                });
+                renderPhotos('antes');
+                renderPhotos('durante');
+                renderPhotos('despues');
+                renderPhotos('activo');
+                renderPhotos('lugar');
+            }
+
+            // Cerrar modal
+            cerrarModal();
+
+            alert('Orden cargada correctamente');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Eliminar orden guardada
+        function eliminarOrdenGuardada(idOrden) {
+            if (!confirm('¿Está seguro de eliminar esta orden?')) return;
+
+            let ordenes = JSON.parse(localStorage.getItem('ordenesTrabajo') || '[]');
+            ordenes = ordenes.filter(o => o.id !== idOrden);
+            localStorage.setItem('ordenesTrabajo', JSON.stringify(ordenes));
+
+            verOrdenesGuardadas(); // Actualizar la lista
         }
 
         // Guardar orden en localStorage y generar PDF
