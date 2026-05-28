@@ -1162,8 +1162,8 @@
                     </div>
 
                     <div class="form-group" id="numeroRevisionGroup" style="display:none;">
-                        <label for="numeroRevision">Número de Revisión:</label>
-                        <input type="text" id="numeroRevision" name="numeroRevision" placeholder="Número de revisión">
+                        <label for="numeroRevision">N° Revisión o ID Evento:</label>
+                        <input type="text" id="numeroRevision" name="numeroRevision" placeholder="N° Revisión o ID Evento">
                     </div>
 
                     <div class="form-group">
@@ -3353,6 +3353,19 @@
                     }
                 });
 
+                // Generar nombre de orden con formato: N° Consigna/Código - Coordinador - Fecha
+                const tipoEventoValue = ordenData.datos.tipoEvento || '';
+                const consignacion = ordenData.datos.consignacion || 'Sin Consignación';
+                const numeroRevision = ordenData.datos.numeroRevision || '';
+                const coordinadorValue = ordenData.datos.coordinador || 'Sin Coordinador';
+                const fechaInicioProg = ordenData.datos.fechaInicioProg || '';
+
+                if (tipoEventoValue === 'REVISION') {
+                    ordenData.nombreOrden = `${numeroRevision} - ${coordinadorValue} - ${fechaInicioProg}`;
+                } else {
+                    ordenData.nombreOrden = `${consignacion} - ${coordinadorValue} - ${fechaInicioProg}`;
+                }
+
                 // Guardar en IndexedDB
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
@@ -3398,17 +3411,8 @@
                         `;
                     } else {
                         lista.innerHTML = ordenes.map((orden) => {
-                            const numeroConsignacion = orden.datos.consignacion || 'Sin Consignación';
-                            const coordinador = orden.datos.coordinador || 'Sin Coordinador';
-                            const tipoEvento = orden.datos.tipoEvento || '';
-
-                            let nombreOrden;
-                            if (tipoEvento === 'REVISION') {
-                                const numeroRevision = orden.datos.numeroRevision || '';
-                                nombreOrden = `${numeroConsignacion} - ${coordinador} - ${numeroRevision}`;
-                            } else {
-                                nombreOrden = `${numeroConsignacion} - ${coordinador}`;
-                            }
+                            // Usar nombreOrden guardado o generar uno por defecto
+                            const nombreOrden = orden.nombreOrden || `${orden.datos.consignacion || 'SC'} - ${orden.datos.coordinador || 'SC'} - ${orden.datos.fechaInicioProg || ''}`;
 
                             return `
                             <div class="orden-item">
@@ -3545,6 +3549,44 @@
         // Inicializar IndexedDB al cargar la página
         initIndexedDB().catch(e => console.error('No se pudo inicializar IndexedDB:', e));
 
+        // Función para generar secciones de fotos con máximo 4 por página
+        function generatePhotoSection(title, photosArray, altText) {
+            if (photosArray.length === 0) return '';
+
+            let result = '';
+            const totalPhotos = photosArray.length;
+            let photoIndex = 0;
+
+            while (photoIndex < totalPhotos) {
+                // Determinar cuántas fotos van en esta "página" (grupo de 4 máximo)
+                const remaining = totalPhotos - photoIndex;
+                const photosInThisGroup = Math.min(4, remaining);
+
+                // Agregar título con grupo si hay más de 4 fotos
+                const groupTitle = totalPhotos > 4 ? `${title} (${photoIndex + 1}-${photoIndex + photosInThisGroup} de ${totalPhotos})` : `${title} (${totalPhotos})`;
+
+                result += `<div class="photo-category">`;
+                result += `<p class="photo-title"><strong>FOTOS ${groupTitle}</strong></p>`;
+                result += `<div class="photos-grid">`;
+
+                // Agregar las fotos de este grupo
+                for (let i = 0; i < photosInThisGroup; i++) {
+                    const photo = photosArray[photoIndex + i];
+                    result += `<div class="photo-item"><img src="${photo.data}" alt="${altText} ${photoIndex + i + 1}"></div>`;
+                }
+
+                result += `</div></div>`;
+                photoIndex += photosInThisGroup;
+
+                // Agregar page-break si hay más fotos
+                if (photoIndex < totalPhotos) {
+                    result = `<div class="photo-break"></div>` + result;
+                }
+            }
+
+            return result;
+        }
+
         // Generar y descargar PDF
         async function generarPDF() {
             try {
@@ -3556,6 +3598,20 @@
                 }
 
                 const form = document.getElementById('workOrderForm');
+
+                // Generar título del PDF basado en los datos de la orden
+                const tipoEventoValue = form.tipoEvento?.value || '';
+                const consignacion = form.consignacion?.value || '';
+                const numeroRevision = form.numeroRevision?.value || '';
+                const coordinador = form.coordinador?.value || '';
+                const fechaInicioProg = form.fechaInicioProg?.value || '';
+
+                let pdfTitulo;
+                if (tipoEventoValue === 'REVISION') {
+                    pdfTitulo = `${numeroRevision} - ${coordinador} - ${fechaInicioProg}`;
+                } else {
+                    pdfTitulo = `${consignacion} - ${coordinador} - ${fechaInicioProg}`;
+                }
 
                 // Función para convertir imagen a base64
                 function imageToBase64(img) {
@@ -3594,7 +3650,7 @@
             <html>
             <head>
                 <meta charset="UTF-8">
-                <title>Orden de Trabajo - CEDENAR</title>
+                <title>${pdfTitulo}</title>
                 <style>
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     body { font-family: Arial, sans-serif; font-size: 11px; padding: 15px; background: white; }
@@ -3636,11 +3692,14 @@
                     .signature-section { display: flex; justify-content: space-around; margin-top: 20px; position: relative; z-index: 1; }
                     .signature-box { text-align: center; width: 45%; border: 1px solid #333; padding: 15px; }
                     .signature-line { border-bottom: 1px solid #333; margin-top: 30px; width: 80%; margin-left: auto; margin-right: auto; }
-                    .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
-                    .photo-category { margin-bottom: 8px; page-break-inside: avoid; border: 1px solid #ccc; padding: 6px; position: relative; z-index: 1; }
-                    .photo-title { margin-bottom: 4px; color: #333; font-size: 10px; }
-                    .photo-item { width: 100%; height: 180px; border: 2px solid #1e3c72; overflow: hidden; background: #fff; padding: 2px; }
+                    .photos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px; }
+                    .photo-category { margin-bottom: 10px; page-break-inside: avoid; border: 1px solid #ccc; padding: 8px; position: relative; z-index: 1; }
+                    .photo-title { margin-bottom: 6px; color: #333; font-size: 11px; }
+                    .photo-item { width: 100%; height: 200px; border: 2px solid #1e3c72; overflow: hidden; background: #fff; padding: 3px; page-break-inside: avoid; }
                     .photo-item img { width: 100%; height: 100%; object-fit: contain; }
+                    .photo-break { page-break-before: always; }
+                    .photo-row { display: contents; }
+                    .photos-wrapper { page-break-inside: avoid; }
                     .contact-info { margin-top: 15px; padding: 8px; background: #f5f5f5; text-align: center; font-size: 9px; border: 1px solid #ccc; position: relative; z-index: 1; }
                     .field-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-bottom: 10px; }
                     .field-box { border: 1px solid #333; padding: 6px; background: white; }
@@ -3669,7 +3728,7 @@
                         <div class="field-box"><label>Hora Inicio Prog.:</label><p>${form.horaInicioProg?.value || ''}</p></div>
                     </div>
                     <div class="field-row">
-                        ${form.tipoEvento?.value === 'REVISION' ? `<div class="field-box"><label>Número de Revisión:</label><p>${form.numeroRevision?.value || ''}</p></div>` : '<div class="field-box"><label>Consignación No.:</label><p>' + (form.consignacion?.value || '') + '</p></div>'}
+                        ${form.tipoEvento?.value === 'REVISION' ? `<div class="field-box"><label>N° Revisión o ID Evento:</label><p>${form.numeroRevision?.value || ''}</p></div>` : '<div class="field-box"><label>Consignación No.:</label><p>' + (form.consignacion?.value || '') + '</p></div>'}
                         <div class="field-box"><label>Fecha Consignación:</label><p>${form.fechaConsignacion?.value || ''}</p></div>
                         <div class="field-box"><label>Circuito:</label><p>${form.circuito?.value || ''}</p></div>
                     </div>
@@ -3734,50 +3793,14 @@
                 <div class="section">
                     <div class="section-title">4. REGISTRO FOTOGRÁFICO</div>
                     <div class="photos-section">
-                        ${photos.antes.length > 0 ? `
-                        <div class="photo-category">
-                            <p class="photo-title"><strong>FOTOS DEL ANTES (${photos.antes.length})</strong></p>
-                            <div class="photos-grid">
-                                ${photos.antes.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto antes"></div>`).join('')}
-                            </div>
-                        </div>` : ''}
-                        ${photos.durante.length > 0 ? `
-                        <div class="photo-category">
-                            <p class="photo-title"><strong>FOTOS DEL DURANTE (${photos.durante.length})</strong></p>
-                            <div class="photos-grid">
-                                ${photos.durante.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto durante"></div>`).join('')}
-                            </div>
-                        </div>` : ''}
-                        ${photos.despues.length > 0 ? `
-                        <div class="photo-category">
-                            <p class="photo-title"><strong>FOTOS DEL DESPUÉS (${photos.despues.length})</strong></p>
-                            <div class="photos-grid">
-                                ${photos.despues.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto después"></div>`).join('')}
-                            </div>
-                        </div>` : ''}
-                        ${photos.activo.length > 0 ? `
-                        <div class="photo-category">
-                            <p class="photo-title"><strong>FOTOS DEL ACTIVO INSTALADO (${photos.activo.length})</strong></p>
-                            <div class="photos-grid">
-                                ${photos.activo.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto activo"></div>`).join('')}
-                            </div>
-                        </div>` : ''}
+                        ${generatePhotoSection('ANTES', photos.antes, 'Foto antes')}
+                        ${generatePhotoSection('DURANTE', photos.durante, 'Foto durante')}
+                        ${generatePhotoSection('DESPUÉS', photos.despues, 'Foto después')}
+                        ${generatePhotoSection('ACTIVO INSTALADO', photos.activo, 'Foto activo')}
                         ${form.coordenadasActivo?.value ? `<p><strong>Coordenadas del Activo:</strong> ${form.coordenadasActivo.value}</p>` : ''}
-                        ${photos.lugar.length > 0 ? `
-                        <div class="photo-category">
-                            <p class="photo-title"><strong>FOTOS DEL LUGAR - TRABAJO PENDIENTE (${photos.lugar.length})</strong></p>
-                            <div class="photos-grid">
-                                ${photos.lugar.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto lugar"></div>`).join('')}
-                            </div>
-                        </div>` : ''}
+                        ${generatePhotoSection('LUGAR - TRABAJO PENDIENTE', photos.lugar, 'Foto lugar')}
                         ${form.coordenadasLugar?.value ? `<p><strong>Coordenadas del Lugar:</strong> ${form.coordenadasLugar.value}</p>` : ''}
-                        ${photos.permiso.length > 0 ? `
-                        <div class="photo-category">
-                            <p class="photo-title"><strong>FOTOS PERMISO TRABAJO SEGURO EN ALTURA (${photos.permiso.length})</strong></p>
-                            <div class="photos-grid">
-                                ${photos.permiso.map(p => `<div class="photo-item"><img src="${p.data}" alt="Foto permiso"></div>`).join('')}
-                            </div>
-                        </div>` : ''}
+                        ${generatePhotoSection('PERMISO TRABAJO SEGURO EN ALTURA', photos.permiso, 'Foto permiso')}
                     </div>
                 </div>
 
