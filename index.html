@@ -1582,13 +1582,6 @@
                         </tr>
                     </tbody>
                 </table>
-
-                <div style="margin-top: 15px;">
-                    <button type="button" class="btn btn-secondary" onclick="addMaterialRow()">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                        Agregar Material
-                    </button>
-                </div>
             </div>
 
             <!-- Sección 4: Fotos del Trabajo -->
@@ -3138,7 +3131,7 @@
             }
         }
 
-        // Manejar carga de fotos (con geolocalización automática para galería)
+        // Manejar carga de fotos desde galería (SIN geolocalización automática)
         function handlePhotoUpload(input, category) {
             const files = input.files;
             if (files.length > 0) {
@@ -3148,69 +3141,24 @@
                         // Procesar PDF
                         handlePdfUpload({ files: [file] }, category);
                     } else if (file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024) {
-                        // Crear mensaje de estado
+                        // Crear mensaje de estado - Galería no obtiene ubicación automáticamente
                         const statusMsg = document.createElement('div');
-                        statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e3c72;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
-                        statusMsg.textContent = 'Obteniendo ubicación...';
+                        statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2a5298;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
+                        statusMsg.textContent = '📷 Imagen de galería cargada - Puede ingresar coordenadas manualmente si lo desea';
                         document.body.appendChild(statusMsg);
 
-                        // Intentar obtener geolocalización automáticamente
-                        let locationPromise = new Promise((resolve) => {
-                            if (navigator.geolocation) {
-                                navigator.geolocation.getCurrentPosition(
-                                    function(position) {
-                                        const lat = position.coords.latitude.toFixed(6);
-                                        const lng = position.coords.longitude.toFixed(6);
-                                        resolve(`${lat}, ${lng}`);
-                                    },
-                                    function(error) {
-                                        resolve(''); // Sin ubicación
-                                    },
-                                    { enableHighAccuracy: true, timeout: 5000 }
-                                );
-                            } else {
-                                resolve('');
-                            }
-                        });
-
-                        // Leer imagen y obtener ubicación en paralelo
+                        // Leer imagen sin geolocalización automática
                         const reader = new FileReader();
-                        reader.onload = async function(e) {
-                            const coords = await locationPromise;
-
-                            // Actualizar mensaje de estado
-                            if (coords) {
-                                statusMsg.textContent = `📍 Coordenadas capturadas: ${coords}`;
-                                statusMsg.style.background = '#28a745';
-                            } else {
-                                statusMsg.textContent = 'Sin coordenadas disponibles - Puede ingresarlas manualmente';
-                                statusMsg.style.background = '#e67e22';
-                            }
-
+                        reader.onload = function(e) {
                             const photoData = {
                                 id: Date.now() + Math.random(),
                                 data: e.target.result,
                                 name: file.name,
                                 date: new Date().toLocaleString(),
-                                location: coords
+                                location: '' // Sin coordenadas automáticas para galería
                             };
                             photos[category].push(photoData);
                             renderPhotos(category);
-
-                            // Auto-llenar coordenadas del campo principal según categoría
-                            if (coords) {
-                                if (category === 'antes') {
-                                    document.getElementById('coordenadasAntes').value = coords;
-                                } else if (category === 'durante') {
-                                    document.getElementById('coordenadasDurante').value = coords;
-                                } else if (category === 'despues') {
-                                    document.getElementById('coordenadasDespues').value = coords;
-                                } else if (category === 'activo') {
-                                    document.getElementById('coordenadasActivo').value = coords;
-                                } else if (category === 'lugar') {
-                                    document.getElementById('coordenadasLugar').value = coords;
-                                }
-                            }
 
                             // Remover mensaje después de 3 segundos
                             setTimeout(() => {
@@ -3224,6 +3172,98 @@
                 });
             }
             input.value = '';
+        }
+
+        // Tomar foto con cámara y obtener ubicación automáticamente
+        function takePhotoWithLocation(category) {
+            const input = document.getElementById(category + 'Input');
+            const statusMsg = document.createElement('div');
+            statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e3c72;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
+            statusMsg.textContent = 'Abriendo cámara para capturar ubicación...';
+            document.body.appendChild(statusMsg);
+
+            // Simular click en input para abrir cámara
+            // La cámara generalmente incluye datos EXIF con ubicación
+            input.click();
+
+            // Cuando se seleccione la imagen, se procesará en handlePhotoUpload
+            // Pero para cámaras, intentaremos obtener ubicación
+            const originalHandler = input.onchange;
+            input.onchange = function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    Array.from(files).forEach(file => {
+                        if (file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024) {
+                            statusMsg.textContent = '📍 Obteniendo ubicación...';
+                            statusMsg.style.background = '#e67e22';
+
+                            // Obtener geolocalización para fotos de cámara
+                            let locationPromise = new Promise((resolve) => {
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(
+                                        function(position) {
+                                            const lat = position.coords.latitude.toFixed(6);
+                                            const lng = position.coords.longitude.toFixed(6);
+                                            resolve(`${lat}, ${lng}`);
+                                        },
+                                        function(error) {
+                                            resolve(''); // Sin ubicación
+                                        },
+                                        { enableHighAccuracy: true, timeout: 5000 }
+                                    );
+                                } else {
+                                    resolve('');
+                                }
+                            });
+
+                            const reader = new FileReader();
+                            reader.onload = async function(evt) {
+                                const coords = await locationPromise;
+
+                                if (coords) {
+                                    statusMsg.textContent = `📍 Coordenadas capturadas: ${coords}`;
+                                    statusMsg.style.background = '#28a745';
+                                } else {
+                                    statusMsg.textContent = '📷 Foto capturada - Puede ingresar coordenadas manualmente';
+                                    statusMsg.style.background = '#2a5298';
+                                }
+
+                                const photoData = {
+                                    id: Date.now() + Math.random(),
+                                    data: evt.target.result,
+                                    name: file.name,
+                                    date: new Date().toLocaleString(),
+                                    location: coords
+                                };
+                                photos[category].push(photoData);
+                                renderPhotos(category);
+
+                                // Auto-llenar coordenadas del campo principal según categoría
+                                if (coords) {
+                                    if (category === 'antes') {
+                                        document.getElementById('coordenadasAntes').value = coords;
+                                    } else if (category === 'durante') {
+                                        document.getElementById('coordenadasDurante').value = coords;
+                                    } else if (category === 'despues') {
+                                        document.getElementById('coordenadasDespues').value = coords;
+                                    } else if (category === 'activo') {
+                                        document.getElementById('coordenadasActivo').value = coords;
+                                    } else if (category === 'lugar') {
+                                        document.getElementById('coordenadasLugar').value = coords;
+                                    }
+                                }
+
+                                setTimeout(() => {
+                                    statusMsg.remove();
+                                }, 3000);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+                input.value = '';
+                input.onchange = originalHandler;
+            };
         }
 
         // Manejar carga de PDFs y extraer imágenes
@@ -3598,6 +3638,9 @@
         const DB_VERSION = 1;
         const STORE_NAME = 'ordenes';
 
+        // Variable para rastrear la orden actual (para actualizar en lugar de crear nueva)
+        let ordenActualId = null;
+
         // Inicializar IndexedDB
         function initIndexedDB() {
             return new Promise((resolve, reject) => {
@@ -3692,9 +3735,29 @@
                     }
                 }
 
+                // Obtener fecha original si estamos actualizando
+                let fechaOriginal = null;
+                if (ordenActualId) {
+                    // Intentar obtener la fecha original de la orden existente
+                    const transactionGet = db.transaction([STORE_NAME], 'readonly');
+                    const storeGet = transactionGet.objectStore(STORE_NAME);
+                    const requestGet = storeGet.get(ordenActualId);
+                    await new Promise((resolve) => {
+                        requestGet.onsuccess = function() {
+                            if (requestGet.result) {
+                                fechaOriginal = requestGet.result.fechaGuardado;
+                            }
+                            resolve();
+                        };
+                        requestGet.onerror = function() {
+                            resolve();
+                        };
+                    });
+                }
+
                 const ordenData = {
-                    id: Date.now(),
-                    fechaGuardado: new Date().toLocaleString(),
+                    id: ordenActualId || Date.now(),
+                    fechaGuardado: fechaOriginal || new Date().toLocaleString(),
                     datos: {},
                     fotos: fotosComprimidas
                 };
@@ -3747,12 +3810,16 @@
                     ordenData.nombreOrden = `${consignacion} - ${coordinadorValue} - ${fechaInicioProg}`;
                 }
 
-                // Guardar en IndexedDB
+                // Guardar en IndexedDB (put actualiza si existe o crea si no existe)
                 const transaction = db.transaction([STORE_NAME], 'readwrite');
                 const store = transaction.objectStore(STORE_NAME);
-                store.add(ordenData);
+                store.put(ordenData);
 
                 transaction.oncomplete = function() {
+                    // Si es una nueva orden, guardar el ID para futuras actualizaciones
+                    if (!ordenActualId) {
+                        ordenActualId = ordenData.id;
+                    }
                     alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.\n\nAlmacenamiento: IndexedDB (alta capacidad)');
                 };
 
@@ -3867,6 +3934,9 @@
                         alert('Orden no encontrada');
                         return;
                     }
+
+                    // Establecer el ID actual para que las actualizaciones guarden en la misma orden
+                    ordenActualId = parseInt(idOrden);
 
                     // Llenar los campos del formulario
                     const datos = orden.datos;
