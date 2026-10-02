@@ -1590,6 +1590,30 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- Foto del Egreso o Reintegro de Materiales -->
+                <div class="photo-category" style="margin-top: 20px;">
+                    <h4>
+                        <svg viewBox="0 0 24 24" fill="#1e3c72"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                        FOTO DEL EGRESO O REINTEGRO DE MATERIALES
+                    </h4>
+                    <p style="color: #666; margin-bottom: 15px;">Adjunte o tome una foto del egreso o reintegro de materiales (puede agregar varias)</p>
+                    <div class="photo-upload-area" data-category="egreso" onclick="document.getElementById('egresoInput').click()">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        <p><strong>Haz clic o arrastra las imágenes aquí</strong></p>
+                        <p>Formatos: JPG, PNG (máx. 5MB por imagen)</p>
+                        <input type="file" id="egresoInput" accept="image/*" multiple onchange="handlePhotoUpload(this, 'egreso')">
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                            <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); takePhotoWithLocation('egreso')">
+                                📷 Tomar Foto con Ubicación
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); document.getElementById('egresoInput').click()">
+                                🖼️ Seleccionar de Galería
+                            </button>
+                        </div>
+                    </div>
+                    <div class="photo-grid" id="egresoGrid"></div>
+                </div>
             </div>
 
             <!-- Sección 4: Fotos del Trabajo -->
@@ -1891,7 +1915,8 @@
             despues: [],
             activo: [],
             lugar: [],
-            permiso: []
+            permiso: [],
+            egreso: []
         };
 
         // Firma digital
@@ -3149,18 +3174,17 @@
                         // Procesar PDF
                         handlePdfUpload({ files: [file] }, category);
                     } else if (file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024) {
-                        // Crear mensaje de estado - Galería no obtiene ubicación automáticamente
-                        const statusMsg = document.createElement('div');
-                        statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2a5298;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
-                        statusMsg.textContent = '📷 Imagen de galería cargada - Puede ingresar coordenadas manualmente si lo desea';
-                        document.body.appendChild(statusMsg);
+                        // Comprimir imagen a 1600px / JPEG 0.85 para 400 PPI en el PDF
+                        compressImage(file, 1600, 0.85).then(compressedData => {
+                            // Crear mensaje de estado - Galería no obtiene ubicación automáticamente
+                            const statusMsg = document.createElement('div');
+                            statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2a5298;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
+                            statusMsg.textContent = '📷 Imagen de galería cargada - Puede ingresar coordenadas manualmente si lo desea';
+                            document.body.appendChild(statusMsg);
 
-                        // Leer imagen sin geolocalización automática
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
                             const photoData = {
                                 id: Date.now() + Math.random(),
-                                data: e.target.result,
+                                data: compressedData,
                                 name: file.name,
                                 date: new Date().toLocaleString(),
                                 location: '' // Sin coordenadas automáticas para galería
@@ -3172,8 +3196,9 @@
                             setTimeout(() => {
                                 statusMsg.remove();
                             }, 3000);
-                        };
-                        reader.readAsDataURL(file);
+                        }).catch(err => {
+                            alert('Error al procesar la imagen: ' + err.message);
+                        });
                     } else {
                         alert('Por favor seleccione imágenes o PDFs válidos (máx. 10MB)');
                     }
@@ -3344,20 +3369,19 @@
             input.onchange = function(e) {
                 const file = e.target.files[0];
                 if (file && file.type.startsWith('image/')) {
-                    // Obtener ubicación
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            function(position) {
-                                const lat = position.coords.latitude.toFixed(6);
-                                const lng = position.coords.longitude.toFixed(6);
-                                const coords = `${lat}, ${lng}`;
+                    // Comprimir imagen a 1600px / JPEG 0.85 para 400 PPI en el PDF
+                    compressImage(file, 1600, 0.85).then(compressedData => {
+                        // Obtener ubicación
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                function(position) {
+                                    const lat = position.coords.latitude.toFixed(6);
+                                    const lng = position.coords.longitude.toFixed(6);
+                                    const coords = `${lat}, ${lng}`;
 
-                                // Leer imagen
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
                                     const photoData = {
                                         id: Date.now() + Math.random(),
-                                        data: e.target.result,
+                                        data: compressedData,
                                         name: file.name,
                                         date: new Date().toLocaleString(),
                                         location: coords
@@ -3377,43 +3401,36 @@
                                     } else if (category === 'lugar') {
                                         document.getElementById('coordenadasLugar').value = coords;
                                     }
-                                };
-                                reader.readAsDataURL(file);
-                            },
-                            function(error) {
-                                // Si falla geolocalización, guardar sin ubicación
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
+                                },
+                                function(error) {
+                                    // Si falla geolocalización, guardar sin ubicación
                                     const photoData = {
                                         id: Date.now() + Math.random(),
-                                        data: e.target.result,
+                                        data: compressedData,
                                         name: file.name,
                                         date: new Date().toLocaleString()
                                     };
                                     photos[category].push(photoData);
                                     renderPhotos(category);
                                     alert('Foto guardada. No se pudo obtener ubicación.');
-                                };
-                                reader.readAsDataURL(file);
-                            },
-                            { enableHighAccuracy: true, timeout: 10000 }
-                        );
-                    } else {
-                        // Sin geolocalización disponible
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
+                                },
+                                { enableHighAccuracy: true, timeout: 10000 }
+                            );
+                        } else {
+                            // Sin geolocalización disponible
                             const photoData = {
                                 id: Date.now() + Math.random(),
-                                data: e.target.result,
+                                data: compressedData,
                                 name: file.name,
                                 date: new Date().toLocaleString()
                             };
                             photos[category].push(photoData);
                             renderPhotos(category);
                             alert('Geolocalización no disponible en este dispositivo.');
-                        };
-                        reader.readAsDataURL(file);
-                    }
+                        }
+                    }).catch(err => {
+                        alert('Error al procesar la imagen: ' + err.message);
+                    });
                 }
             };
 
@@ -3620,6 +3637,7 @@
                 renderPhotos('activo');
                 renderPhotos('lugar');
                 renderPhotos('permiso');
+                renderPhotos('egreso');
             }
 
             // Cerrar modal
@@ -3993,6 +4011,7 @@
                         renderPhotos('activo');
                         renderPhotos('lugar');
                         renderPhotos('permiso');
+                        renderPhotos('egreso');
                     }
 
                     cerrarModal();
@@ -4374,7 +4393,9 @@
                 }
             });
 
-            html += `</tbody></table></div>
+            html += `</tbody></table>
+                    ${generatePhotoSection('FOTO DEL EGRESO O REINTEGRO DE MATERIALES', photos.egreso, 'Foto egreso o reintegro de materiales')}
+                </div>
 
                 <div class="section">
                     <div class="section-title">4. REGISTRO FOTOGRÁFICO</div>
@@ -4465,12 +4486,14 @@
                 photos.activo = [];
                 photos.lugar = [];
                 photos.permiso = [];
+                photos.egreso = [];
                 renderPhotos('antes');
                 renderPhotos('durante');
                 renderPhotos('despues');
                 renderPhotos('activo');
                 renderPhotos('lugar');
                 renderPhotos('permiso');
+                renderPhotos('egreso');
                 // Reset tabs
                 showPhotoPanel('realizado');
                 // Agregar una fila de material vacía
@@ -4496,12 +4519,14 @@
                 photos.activo = [];
                 photos.lugar = [];
                 photos.permiso = [];
+                photos.egreso = [];
                 renderPhotos('antes');
                 renderPhotos('durante');
                 renderPhotos('despues');
                 renderPhotos('activo');
                 renderPhotos('lugar');
                 renderPhotos('permiso');
+                renderPhotos('egreso');
                 showPhotoPanel('realizado');
                 alert('Orden eliminada');
             }
