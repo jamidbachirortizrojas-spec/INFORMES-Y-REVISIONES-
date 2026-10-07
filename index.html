@@ -865,6 +865,84 @@
             margin-bottom: 15px;
         }
 
+        /* Indicador de autoguardado de borrador */
+        .draft-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.85em;
+            font-weight: 600;
+            z-index: 9998;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .draft-indicator.idle { background: #f0f0f0; color: #666; }
+        .draft-indicator.dirty { background: #ffc107; color: #333; }
+        .draft-indicator.saving { background: #17a2b8; color: white; }
+        .draft-indicator.saved { background: #28a745; color: white; }
+        .draft-indicator.error { background: #dc3545; color: white; }
+        .draft-indicator .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: currentColor;
+        }
+        .draft-indicator.saving .dot {
+            animation: draftPulse 1s infinite;
+        }
+        @keyframes draftPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Modal de recuperación de borrador */
+        .recovery-modal-content {
+            text-align: center;
+            padding: 30px;
+            max-width: 500px;
+        }
+        .recovery-modal-content .recovery-icon {
+            width: 80px; height: 80px;
+            margin: 0 auto 20px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .recovery-modal-content .recovery-icon svg {
+            width: 40px; height: 40px;
+            fill: #1e3c72;
+        }
+        .recovery-modal-content h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        .recovery-modal-content .recovery-text {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .recovery-modal-content .draft-info-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+            border-left: 4px solid #1e3c72;
+        }
+        .recovery-modal-content .draft-info-box strong { color: #1e3c72; }
+        .recovery-modal-content .recovery-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         .signature-section {
             display: grid;
             grid-template-columns: 1fr;
@@ -1895,6 +1973,37 @@
                 </div>
                 <div class="ordenes-lista" id="ordenesLista">
                     <!-- Las órdenes se mostrarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de autoguardado de borrador -->
+        <div id="draftIndicator" class="draft-indicator idle">
+            <span class="dot"></span>
+            <span id="draftIndicatorText">Sin cambios</span>
+        </div>
+
+        <!-- Modal de recuperación de borrador -->
+        <div class="modal" id="modalRecuperarBorrador">
+            <div class="modal-content recovery-modal-content">
+                <div class="recovery-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-6h2v6zm0-8h-2V7h2v4z"/></svg>
+                </div>
+                <h3>Recuperar borrador</h3>
+                <p class="recovery-text">Tienes un formulario sin terminar. ¿Quieres recuperarlo o empezar uno nuevo?</p>
+                <div class="draft-info-box" id="draftInfoBox">
+                    <strong>Última modificación:</strong> <span id="draftFecha"></span><br>
+                    <strong>Coordinador:</strong> <span id="draftCoordinador">—</span>
+                </div>
+                <div class="recovery-actions">
+                    <button class="btn btn-success" onclick="recuperarBorrador()">
+                        <svg viewBox="0 0 24 24" fill="white" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                        Recuperar borrador
+                    </button>
+                    <button class="btn btn-secondary" onclick="descartarBorrador()">
+                        <svg viewBox="0 0 24 24" fill="white" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        Empezar nuevo
+                    </button>
                 </div>
             </div>
         </div>
@@ -3174,18 +3283,17 @@
                         // Procesar PDF
                         handlePdfUpload({ files: [file] }, category);
                     } else if (file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024) {
-                        // Crear mensaje de estado - Galería no obtiene ubicación automáticamente
-                        const statusMsg = document.createElement('div');
-                        statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2a5298;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
-                        statusMsg.textContent = '📷 Imagen de galería cargada - Puede ingresar coordenadas manualmente si lo desea';
-                        document.body.appendChild(statusMsg);
+                        // Comprimir imagen a 1600px / JPEG 0.85 para 400 PPI en el PDF
+                        compressImage(file, 1600, 0.85).then(compressedData => {
+                            // Crear mensaje de estado - Galería no obtiene ubicación automáticamente
+                            const statusMsg = document.createElement('div');
+                            statusMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2a5298;color:white;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;';
+                            statusMsg.textContent = '📷 Imagen de galería cargada - Puede ingresar coordenadas manualmente si lo desea';
+                            document.body.appendChild(statusMsg);
 
-                        // Leer imagen sin geolocalización automática
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
                             const photoData = {
                                 id: Date.now() + Math.random(),
-                                data: e.target.result,
+                                data: compressedData,
                                 name: file.name,
                                 date: new Date().toLocaleString(),
                                 location: '' // Sin coordenadas automáticas para galería
@@ -3197,8 +3305,9 @@
                             setTimeout(() => {
                                 statusMsg.remove();
                             }, 3000);
-                        };
-                        reader.readAsDataURL(file);
+                        }).catch(err => {
+                            alert('Error al procesar la imagen: ' + err.message);
+                        });
                     } else {
                         alert('Por favor seleccione imágenes o PDFs válidos (máx. 10MB)');
                     }
@@ -3369,20 +3478,19 @@
             input.onchange = function(e) {
                 const file = e.target.files[0];
                 if (file && file.type.startsWith('image/')) {
-                    // Obtener ubicación
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            function(position) {
-                                const lat = position.coords.latitude.toFixed(6);
-                                const lng = position.coords.longitude.toFixed(6);
-                                const coords = `${lat}, ${lng}`;
+                    // Comprimir imagen a 1600px / JPEG 0.85 para 400 PPI en el PDF
+                    compressImage(file, 1600, 0.85).then(compressedData => {
+                        // Obtener ubicación
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                function(position) {
+                                    const lat = position.coords.latitude.toFixed(6);
+                                    const lng = position.coords.longitude.toFixed(6);
+                                    const coords = `${lat}, ${lng}`;
 
-                                // Leer imagen
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
                                     const photoData = {
                                         id: Date.now() + Math.random(),
-                                        data: e.target.result,
+                                        data: compressedData,
                                         name: file.name,
                                         date: new Date().toLocaleString(),
                                         location: coords
@@ -3402,43 +3510,36 @@
                                     } else if (category === 'lugar') {
                                         document.getElementById('coordenadasLugar').value = coords;
                                     }
-                                };
-                                reader.readAsDataURL(file);
-                            },
-                            function(error) {
-                                // Si falla geolocalización, guardar sin ubicación
-                                const reader = new FileReader();
-                                reader.onload = function(e) {
+                                },
+                                function(error) {
+                                    // Si falla geolocalización, guardar sin ubicación
                                     const photoData = {
                                         id: Date.now() + Math.random(),
-                                        data: e.target.result,
+                                        data: compressedData,
                                         name: file.name,
                                         date: new Date().toLocaleString()
                                     };
                                     photos[category].push(photoData);
                                     renderPhotos(category);
                                     alert('Foto guardada. No se pudo obtener ubicación.');
-                                };
-                                reader.readAsDataURL(file);
-                            },
-                            { enableHighAccuracy: true, timeout: 10000 }
-                        );
-                    } else {
-                        // Sin geolocalización disponible
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
+                                },
+                                { enableHighAccuracy: true, timeout: 10000 }
+                            );
+                        } else {
+                            // Sin geolocalización disponible
                             const photoData = {
                                 id: Date.now() + Math.random(),
-                                data: e.target.result,
+                                data: compressedData,
                                 name: file.name,
                                 date: new Date().toLocaleString()
                             };
                             photos[category].push(photoData);
                             renderPhotos(category);
                             alert('Geolocalización no disponible en este dispositivo.');
-                        };
-                        reader.readAsDataURL(file);
-                    }
+                        }
+                    }).catch(err => {
+                        alert('Error al procesar la imagen: ' + err.message);
+                    });
                 }
             };
 
@@ -3645,6 +3746,7 @@
                 renderPhotos('activo');
                 renderPhotos('lugar');
                 renderPhotos('permiso');
+                renderPhotos('egreso');
             }
 
             // Cerrar modal
@@ -3668,8 +3770,9 @@
         // IndexedDB para almacenar órdenes con fotos (soporta hasta 500MB+)
         let db;
         const DB_NAME = 'CEDENAROrdenesDB';
-        const DB_VERSION = 1;
+        const DB_VERSION = 2;
         const STORE_NAME = 'ordenes';
+        const STORE_NAME_DRAFTS = 'borradores';
 
         // Variable para rastrear la orden actual (para actualizar en lugar de crear nueva)
         let ordenActualId = null;
@@ -3694,8 +3797,350 @@
                     if (!database.objectStoreNames.contains(STORE_NAME)) {
                         database.createObjectStore(STORE_NAME, { keyPath: 'id' });
                     }
+                    if (!database.objectStoreNames.contains(STORE_NAME_DRAFTS)) {
+                        database.createObjectStore(STORE_NAME_DRAFTS, { keyPath: 'id' });
+                    }
                 };
             });
+        }
+
+        // ============================================================
+        // AUTOGUARDADO DE BORRADOR (cada 3s)
+        // ============================================================
+        const DRAFT_KEY = 'borrador_actual';
+        const AUTOSAVE_INTERVAL_MS = 3000;
+        let draftDirty = false;
+        let draftTimer = null;
+        let draftLastSaved = null;
+        let loadingDraft = false;
+        window._borradorPendiente = null;
+
+        // Actualizar el indicador visual
+        function actualizarIndicadorDraft(estado, texto) {
+            const el = document.getElementById('draftIndicator');
+            if (!el) return;
+            el.className = 'draft-indicator ' + estado;
+            const txt = document.getElementById('draftIndicatorText');
+            if (txt) txt.textContent = texto;
+        }
+
+        // Formatear tiempo relativo
+        function formatearTiempoRel(date) {
+            if (!date) return '';
+            const ahora = new Date();
+            const diff = Math.floor((ahora - date) / 1000);
+            if (diff < 5) return 'hace un momento';
+            if (diff < 60) return 'hace ' + diff + ' seg';
+            if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + ' min';
+            return date.toLocaleTimeString();
+        }
+
+        // Detectar si el formulario tiene datos
+        function formTieneDatos() {
+            const form = document.getElementById('workOrderForm');
+            if (!form) return false;
+            const inputs = form.querySelectorAll('input, select, textarea');
+            for (const input of inputs) {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    if (input.checked) return true;
+                } else if (input.value && input.name) {
+                    return true;
+                }
+            }
+            // Verificar si hay materiales
+            const materialRows = document.querySelectorAll('#materialsBody tr');
+            for (const row of materialRows) {
+                const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                if (desc && desc.value) return true;
+            }
+            // Verificar si hay fotos
+            for (const cat in photos) {
+                if (photos[cat] && photos[cat].length > 0) return true;
+            }
+            // Verificar firma
+            if (typeof signatureData !== 'undefined' && signatureData) return true;
+            return false;
+        }
+
+        // Guardar borrador en IndexedDB
+        async function guardarBorrador() {
+            if (loadingDraft) return;
+            if (!formTieneDatos()) {
+                actualizarIndicadorDraft('idle', 'Sin cambios');
+                return;
+            }
+            try {
+                if (!db) await initIndexedDB();
+
+                const form = document.getElementById('workOrderForm');
+                const datos = {};
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.type === 'radio') {
+                        if (input.checked) datos[input.name] = input.value;
+                    } else if (input.type === 'checkbox') {
+                        datos[input.name] = input.checked;
+                    } else if (input.name && input.name.endsWith('[]')) {
+                        if (!datos[input.name]) datos[input.name] = [];
+                        if (input.value) datos[input.name].push(input.value);
+                    } else if (input.name) {
+                        datos[input.name] = input.value;
+                    }
+                });
+
+                // Guardar materiales
+                const materialRows = document.querySelectorAll('#materialsBody tr');
+                datos.materiales = [];
+                materialRows.forEach(row => {
+                    const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                    const codigo = row.querySelector('input[name="materialCodigo[]"]');
+                    const cantidad = row.querySelector('input[name="materialCantidad[]"]');
+                    if (desc && (desc.value || (codigo && codigo.value) || (cantidad && cantidad.value))) {
+                        datos.materiales.push({
+                            descripcion: desc ? desc.value : '',
+                            codigo: codigo ? codigo.value : '',
+                            cantidad: cantidad ? cantidad.value : ''
+                        });
+                    }
+                });
+
+                actualizarIndicadorDraft('saving', 'Guardando borrador...');
+
+                const borrador = {
+                    id: DRAFT_KEY,
+                    fechaGuardado: new Date().toISOString(),
+                    datos: datos,
+                    fotos: JSON.parse(JSON.stringify(photos)),
+                    signatureData: (typeof signatureData !== 'undefined' && signatureData) ? signatureData : null
+                };
+
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                store.put(borrador);
+
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                });
+
+                draftLastSaved = new Date();
+                draftDirty = false;
+                actualizarIndicadorDraft('saved', 'Guardado ' + formatearTiempoRel(draftLastSaved));
+            } catch (e) {
+                console.error('Error guardando borrador:', e);
+                actualizarIndicadorDraft('error', 'Error al guardar borrador');
+            }
+        }
+
+        // Listener que se dispara al cambiar cualquier campo
+        function onFormChange() {
+            if (loadingDraft) return;
+            if (!formTieneDatos()) {
+                actualizarIndicadorDraft('idle', 'Sin cambios');
+                return;
+            }
+            draftDirty = true;
+            actualizarIndicadorDraft('dirty', 'Cambios sin guardar...');
+            if (draftTimer) clearTimeout(draftTimer);
+            draftTimer = setTimeout(function() {
+                guardarBorrador();
+            }, AUTOSAVE_INTERVAL_MS);
+        }
+
+        // Inicializar el sistema de autoguardado
+        function initAutoSave() {
+            const form = document.getElementById('workOrderForm');
+            if (!form) return;
+            form.addEventListener('input', onFormChange);
+            form.addEventListener('change', onFormChange);
+
+            // Observar cambios en la tabla de materiales (filas agregadas/eliminadas)
+            const materialsBody = document.getElementById('materialsBody');
+            if (materialsBody && typeof MutationObserver !== 'undefined') {
+                const observer = new MutationObserver(onFormChange);
+                observer.observe(materialsBody, { childList: true, subtree: true });
+            }
+
+            // Actualizar el texto del indicador cada 5 segundos (tiempo relativo)
+            setInterval(function() {
+                if (draftLastSaved && !draftDirty) {
+                    actualizarIndicadorDraft('saved', 'Guardado ' + formatearTiempoRel(draftLastSaved));
+                }
+            }, 5000);
+        }
+
+        // Verificar si hay un borrador guardado al cargar la página
+        async function verificarBorrador() {
+            try {
+                if (!db) await initIndexedDB();
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readonly');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                const request = store.get(DRAFT_KEY);
+
+                await new Promise(function(resolve, reject) {
+                    request.onsuccess = function() {
+                        const borrador = request.result;
+                        if (borrador && borrador.datos) {
+                            // Verificar que tenga datos significativos
+                            const tieneDatos = Object.keys(borrador.datos).some(function(k) {
+                                const v = borrador.datos[k];
+                                if (v === null || v === undefined) return false;
+                                if (typeof v === 'string') return v.length > 0;
+                                if (Array.isArray(v)) return v.length > 0;
+                                if (typeof v === 'object') return Object.keys(v).length > 0;
+                                return true;
+                            });
+                            if (tieneDatos) {
+                                mostrarModalRecuperacion(borrador);
+                            }
+                        }
+                        resolve();
+                    };
+                    request.onerror = function() { reject(request.error); };
+                });
+            } catch (e) {
+                console.error('Error verificando borrador:', e);
+            }
+        }
+
+        function mostrarModalRecuperacion(borrador) {
+            const fecha = new Date(borrador.fechaGuardado);
+            const fechaEl = document.getElementById('draftFecha');
+            const coordEl = document.getElementById('draftCoordinador');
+            if (fechaEl) fechaEl.textContent = fecha.toLocaleString();
+            if (coordEl) coordEl.textContent = borrador.datos.coordinador || '(sin asignar)';
+            const modal = document.getElementById('modalRecuperarBorrador');
+            if (modal) modal.classList.add('active');
+            window._borradorPendiente = borrador;
+        }
+
+        function recuperarBorrador() {
+            const borrador = window._borradorPendiente;
+            if (!borrador) return;
+
+            loadingDraft = true;
+            try {
+                const form = document.getElementById('workOrderForm');
+                // Restaurar valores del formulario
+                for (const key in borrador.datos) {
+                    if (key === 'materiales') continue;
+                    const inputs = form.querySelectorAll('[name="' + key + '"]');
+                    inputs.forEach(function(input) {
+                        if (borrador.datos[key] === undefined || borrador.datos[key] === null) return;
+                        if (input.type === 'radio' || input.type === 'checkbox') {
+                            input.checked = (input.value === borrador.datos[key]);
+                        } else if (Array.isArray(borrador.datos[key])) {
+                            // Materiales se manejan abajo
+                        } else {
+                            input.value = borrador.datos[key];
+                        }
+                    });
+                }
+
+                // Restaurar materiales
+                if (borrador.datos.materiales && borrador.datos.materiales.length > 0) {
+                    const tbody = document.getElementById('materialsBody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        borrador.datos.materiales.forEach(function(mat) {
+                            if (typeof addMaterialRow === 'function') addMaterialRow();
+                            const rows = tbody.querySelectorAll('tr');
+                            const lastRow = rows[rows.length - 1];
+                            if (!lastRow) return;
+                            const descEl = lastRow.querySelector('input[name="materialDescripcion[]"]');
+                            const codEl = lastRow.querySelector('input[name="materialCodigo[]"]');
+                            const cantEl = lastRow.querySelector('input[name="materialCantidad[]"]');
+                            if (descEl) descEl.value = mat.descripcion || '';
+                            if (codEl) codEl.value = mat.codigo || '';
+                            if (cantEl) cantEl.value = mat.cantidad || '';
+                        });
+                    }
+                }
+
+                // Restaurar fotos
+                if (borrador.fotos) {
+                    Object.keys(borrador.fotos).forEach(function(key) {
+                        photos[key] = borrador.fotos[key] || [];
+                    });
+                    ['antes','durante','despues','activo','lugar','permiso','egreso'].forEach(function(cat) {
+                        if (typeof renderPhotos === 'function') renderPhotos(cat);
+                    });
+                }
+
+                // Restaurar firma
+                if (borrador.signatureData) {
+                    signatureData = borrador.signatureData;
+                    const canvas = document.getElementById('signaturePad');
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        const img = new Image();
+                        img.onload = function() {
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        };
+                        img.src = borrador.signatureData;
+                    }
+                    const statusEl = document.getElementById('signatureStatus');
+                    if (statusEl) {
+                        statusEl.textContent = '✓ Firma aplicada correctamente';
+                        statusEl.className = 'signature-status applied';
+                    }
+                }
+
+                // Restaurar display del coordinador
+                if (borrador.datos.nombreCoordinadorFirma) {
+                    const displayEl = document.getElementById('displayCoordinador');
+                    if (displayEl) displayEl.textContent = borrador.datos.nombreCoordinadorFirma;
+                }
+
+                // Actualizar visibilidad de campos según tipo de evento
+                if (typeof toggleRevisionMode === 'function') toggleRevisionMode();
+            } catch (e) {
+                console.error('Error recuperando borrador:', e);
+            }
+
+            const modal = document.getElementById('modalRecuperarBorrador');
+            if (modal) modal.classList.remove('active');
+            window._borradorPendiente = null;
+
+            draftLastSaved = new Date(borrador.fechaGuardado);
+            draftDirty = false;
+            actualizarIndicadorDraft('saved', 'Borrador recuperado');
+
+            setTimeout(function() { loadingDraft = false; }, 800);
+        }
+
+        async function descartarBorrador() {
+            try {
+                if (!db) await initIndexedDB();
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                store.delete(DRAFT_KEY);
+                await new Promise(function(resolve) { transaction.oncomplete = resolve; });
+            } catch (e) {
+                console.error('Error descartando borrador:', e);
+            }
+            const modal = document.getElementById('modalRecuperarBorrador');
+            if (modal) modal.classList.remove('active');
+            window._borradorPendiente = null;
+            draftLastSaved = null;
+            draftDirty = false;
+            actualizarIndicadorDraft('idle', 'Sin cambios');
+        }
+
+        // Eliminar borrador (usado al guardar orden o crear nueva)
+        async function eliminarBorradorSiExiste() {
+            try {
+                if (!db) await initIndexedDB();
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                store.delete(DRAFT_KEY);
+                await new Promise(function(resolve) { transaction.oncomplete = resolve; });
+            } catch (e) {
+                console.error('Error eliminando borrador:', e);
+            }
+            draftLastSaved = null;
+            draftDirty = false;
+            actualizarIndicadorDraft('idle', 'Sin cambios');
         }
 
         // Comprimir imagen a base64 con calidad reducida
@@ -3853,6 +4298,8 @@
                     if (!ordenActualId) {
                         ordenActualId = ordenData.id;
                     }
+                    // Eliminar el borrador ya que la orden quedó guardada oficialmente
+                    eliminarBorradorSiExiste();
                     alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.\n\nAlmacenamiento: IndexedDB (alta capacidad)');
                 };
 
@@ -4018,6 +4465,7 @@
                         renderPhotos('activo');
                         renderPhotos('lugar');
                         renderPhotos('permiso');
+                        renderPhotos('egreso');
                     }
 
                     cerrarModal();
@@ -4485,6 +4933,8 @@
         function nuevoFormulario() {
             if (confirm('¿Está seguro de crear una nueva orden? Los datos no guardados se perderán.')) {
                 document.getElementById('workOrderForm').reset();
+                // Eliminar borrador pendiente
+                eliminarBorradorSiExiste();
                 // Limpiar fotos
                 photos.antes = [];
                 photos.durante = [];
@@ -4502,6 +4952,22 @@
                 renderPhotos('egreso');
                 // Reset tabs
                 showPhotoPanel('realizado');
+                // Limpiar firma digital (canvas + variable global)
+                signatureData = null;
+                const signatureCanvas = document.getElementById('signaturePad');
+                if (signatureCanvas) {
+                    const ctx = signatureCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+                }
+                const signatureStatus = document.getElementById('signatureStatus');
+                if (signatureStatus) {
+                    signatureStatus.textContent = '';
+                    signatureStatus.className = 'signature-status';
+                }
+                const displayCoord = document.getElementById('displayCoordinador');
+                if (displayCoord) displayCoord.textContent = 'Firma';
+                // Resetear el ID de orden actual (clave para no sobrescribir la anterior)
+                ordenActualId = null;
                 // Agregar una fila de material vacía
                 const tbody = document.getElementById('materialsBody');
                 tbody.innerHTML = `
@@ -4605,6 +5071,8 @@
         // Inicializar estado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             toggleRevisionMode();
+            initAutoSave();
+            verificarBorrador();
         });
 
         // Actualizar nombres en firmas en tiempo real
