@@ -8,6 +8,8 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
+    <!-- JSZip para crear archivos ZIP de backup -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -685,6 +687,214 @@
             color: #1e3c72;
         }
 
+        /* Botón de backup en el modal de órdenes */
+        .backup-toolbar {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .backup-date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .backup-label {
+            font-size: 0.85em;
+            color: #555;
+            font-weight: 600;
+        }
+        .backup-date-input {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: inherit;
+        }
+        .backup-date-input:focus {
+            outline: none;
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 2px rgba(30, 60, 114, 0.15);
+        }
+        .btn-link {
+            background: none;
+            border: none;
+            color: #1e3c72;
+            cursor: pointer;
+            font-size: 0.85em;
+            text-decoration: underline;
+            padding: 4px 8px;
+        }
+        .btn-link:hover {
+            color: #2a5298;
+        }
+        .backup-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .backup-counter {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 600;
+            margin-right: auto;
+        }
+        .btn-backup {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(30, 60, 114, 0.2);
+        }
+        .btn-backup:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(30, 60, 114, 0.3);
+        }
+        .btn-backup:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-restore {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+        }
+        .btn-restore:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+        .backup-status-row {
+            min-height: 20px;
+        }
+        .backup-status {
+            font-size: 0.85em;
+            color: #666;
+        }
+        .backup-status.success {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .backup-status.error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        .backup-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 99999;
+            font-weight: 600;
+            animation: backupSlideIn 0.3s ease;
+            max-width: 90vw;
+        }
+        .backup-toast.error {
+            background: #dc3545;
+        }
+        @keyframes backupSlideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Modal de progreso de restauración */
+        .restore-progress-content {
+            text-align: center;
+            padding: 30px;
+            max-width: 500px;
+        }
+        .restore-progress-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .restore-progress-icon svg {
+            width: 32px;
+            height: 32px;
+            color: #1e3c72;
+        }
+        .restore-progress-content h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+        .restore-progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        .restore-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 12px;
+        }
+        .restore-progress-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+        .restore-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        .restore-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95em;
+        }
+        .restore-summary-item:last-child {
+            border-bottom: none;
+        }
+        .restore-summary-item strong {
+            color: #1e3c72;
+        }
+        .restore-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            margin: 10px 0;
+        }
+
         /* Modal para ver órdenes guardadas */
         .modal {
             display: none;
@@ -863,6 +1073,84 @@
             height: 80px;
             fill: #ccc;
             margin-bottom: 15px;
+        }
+
+        /* Indicador de autoguardado de borrador */
+        .draft-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.85em;
+            font-weight: 600;
+            z-index: 9998;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .draft-indicator.idle { background: #f0f0f0; color: #666; }
+        .draft-indicator.dirty { background: #ffc107; color: #333; }
+        .draft-indicator.saving { background: #17a2b8; color: white; }
+        .draft-indicator.saved { background: #28a745; color: white; }
+        .draft-indicator.error { background: #dc3545; color: white; }
+        .draft-indicator .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: currentColor;
+        }
+        .draft-indicator.saving .dot {
+            animation: draftPulse 1s infinite;
+        }
+        @keyframes draftPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Modal de recuperación de borrador */
+        .recovery-modal-content {
+            text-align: center;
+            padding: 30px;
+            max-width: 500px;
+        }
+        .recovery-modal-content .recovery-icon {
+            width: 80px; height: 80px;
+            margin: 0 auto 20px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .recovery-modal-content .recovery-icon svg {
+            width: 40px; height: 40px;
+            fill: #1e3c72;
+        }
+        .recovery-modal-content h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        .recovery-modal-content .recovery-text {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .recovery-modal-content .draft-info-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+            border-left: 4px solid #1e3c72;
+        }
+        .recovery-modal-content .draft-info-box strong { color: #1e3c72; }
+        .recovery-modal-content .recovery-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .signature-section {
@@ -1225,6 +1513,220 @@
                 width: 100%;
             }
         }
+
+        /* === WIZARD STEPPER === */
+        .wizard-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 15px;
+            background: #f8f9fa;
+            margin: 0 -30px 25px -30px;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        .wizard-step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 5px 10px;
+            border-radius: 8px;
+            user-select: none;
+        }
+        .wizard-step-item:hover { background: #e9ecef; }
+        .wizard-step-item.active {
+            background: #e3f2fd !important;
+            box-shadow: 0 2px 8px rgba(30, 60, 114, 0.2);
+        }
+        .wizard-step-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            border: 3px solid #e0e0e0;
+        }
+        .wizard-step-label {
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #888;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .wizard-step-item.active .wizard-step-circle {
+            background: #1e3c72 !important;
+            color: white !important;
+            border-color: #1e3c72 !important;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.35);
+        }
+        .wizard-step-item.active .wizard-step-label { color: #1e3c72 !important; font-weight: 700; }
+        .wizard-step-item.completed .wizard-step-circle {
+            background: #28a745 !important;
+            color: white !important;
+            border-color: #28a745 !important;
+        }
+        .wizard-step-item.completed .wizard-step-label { color: #28a745 !important; }
+        .wizard-step-item.partial .wizard-step-circle {
+            background: #ffc107 !important;
+            color: #333 !important;
+            border-color: #ffc107 !important;
+        }
+        .wizard-step-item.partial .wizard-step-label { color: #b8860b !important; }
+        .wizard-step-item.empty .wizard-step-circle {
+            background: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+        .wizard-step-item.empty .wizard-step-label { color: #dc3545 !important; }
+        .wizard-step-connector {
+            flex: 0 0 40px;
+            height: 3px;
+            background: #e0e0e0;
+            margin: 0 5px;
+            align-self: flex-start;
+            margin-top: 22px;
+            transition: background 0.3s ease;
+        }
+        .wizard-step-connector.completed { background: #28a745; }
+
+        /* Mostrar solo el paso activo */
+        .form-section.wizard-step { display: none; }
+        .form-section.wizard-step.active { display: block; }
+
+        /* Navegación del wizard */
+        .wizard-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #1e3c72;
+            border-radius: 0 0 15px 15px;
+            margin: 0 -30px -30px -30px;
+        }
+
+        /* Campos faltantes (cuando el paso está en amarillo) */
+        .field-missing {
+            border-color: #ffc107 !important;
+            background-color: #fffbea !important;
+            box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.15);
+        }
+
+        /* Textarea con botón de voz */
+        .textarea-with-voice {
+            position: relative;
+        }
+        .textarea-with-voice textarea {
+            padding-right: 50px !important;
+        }
+        .voice-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .voice-btn:hover {
+            background: #2a5298;
+            transform: scale(1.08);
+        }
+        .voice-btn:active {
+            transform: scale(0.95);
+        }
+        .voice-btn.recording {
+            background: #dc3545;
+            animation: voicePulse 1.2s infinite;
+        }
+        .voice-btn svg {
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+        @keyframes voicePulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4); }
+            50% { transform: scale(1.12); box-shadow: 0 2px 14px rgba(220, 53, 69, 0.8); }
+        }
+        .voice-status {
+            position: absolute;
+            bottom: 52px;
+            right: 10px;
+            background: rgba(220, 53, 69, 0.95);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: none;
+            z-index: 2;
+            white-space: nowrap;
+        }
+        .voice-status.active {
+            display: block;
+        }
+        .field-missing:focus {
+            border-color: #ffc107 !important;
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.25);
+            outline: none;
+        }
+        .missing-note {
+            color: #b8860b;
+            font-weight: 600;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #fff8db;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .wizard-step-info {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 1em;
+        }
+        .wizard-nav .btn:disabled,
+        .wizard-nav .btn[style*="hidden"] {
+            visibility: hidden;
+        }
+
+        /* Responsive wizard */
+        @media (max-width: 768px) {
+            .wizard-stepper {
+                gap: 0;
+                padding: 15px 5px;
+                margin: 0 -15px 20px -15px;
+            }
+            .wizard-step-circle { width: 32px; height: 32px; font-size: 0.9em; }
+            .wizard-step-label { font-size: 0.7em; }
+            .wizard-step-connector { flex: 0 0 15px; margin-top: 17px; }
+            .wizard-nav {
+                flex-direction: column;
+                gap: 10px;
+                margin: 0 -15px -15px -15px;
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1241,8 +1743,40 @@
         </div>
 
         <form id="workOrderForm">
+            <!-- Wizard Stepper -->
+            <div class="wizard-stepper">
+                <div class="wizard-step-item active" data-step-target="1">
+                    <div class="wizard-step-circle">1</div>
+                    <div class="wizard-step-label">Planificación</div>
+                </div>
+                <div class="wizard-step-connector"></div>
+                <div class="wizard-step-item" data-step-target="2">
+                    <div class="wizard-step-circle">2</div>
+                    <div class="wizard-step-label">Ejecución</div>
+                </div>
+                <div class="wizard-step-connector"></div>
+                <div class="wizard-step-item" data-step-target="3">
+                    <div class="wizard-step-circle">3</div>
+                    <div class="wizard-step-label">Materiales</div>
+                </div>
+                <div class="wizard-step-connector"></div>
+                <div class="wizard-step-item" data-step-target="4">
+                    <div class="wizard-step-circle">4</div>
+                    <div class="wizard-step-label">Fotografías</div>
+                </div>
+                <div class="wizard-step-connector"></div>
+                <div class="wizard-step-item" data-step-target="5">
+                    <div class="wizard-step-circle">5</div>
+                    <div class="wizard-step-label">Permisos</div>
+                </div>
+                <div class="wizard-step-connector"></div>
+                <div class="wizard-step-item" data-step-target="6">
+                    <div class="wizard-step-circle">6</div>
+                    <div class="wizard-step-label">Firma</div>
+                </div>
+            </div>
             <!-- Sección 1: Planificación del Evento -->
-            <div class="form-section">
+            <div class="form-section wizard-step active" data-step="1">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
                     1. PLANIFICACIÓN DEL EVENTO
@@ -1514,7 +2048,7 @@
             </div>
 
             <!-- Sección 2: Ejecución del Trabajo -->
-            <div class="form-section">
+            <div class="form-section wizard-step" data-step="2">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                     2. EJECUCIÓN DEL TRABAJO
@@ -1544,7 +2078,7 @@
             </div>
 
             <!-- Sección 3: Materiales -->
-            <div class="form-section">
+            <div class="form-section wizard-step" data-step="3">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24"><path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/></svg>
                     3. MATERIALES
@@ -1619,7 +2153,7 @@
             </div>
 
             <!-- Sección 4: Fotos del Trabajo -->
-            <div class="form-section">
+            <div class="form-section wizard-step" data-step="4">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                     4. REGISTRO FOTOGRÁFICO
@@ -1788,7 +2322,7 @@
             </div>
 
             <!-- Sección 4.5: Permiso de Trabajo Seguro en Altura -->
-            <div class="form-section">
+            <div class="form-section wizard-step" data-step="5">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
                     PERMISO: TRABAJO SEGURO EN ALTURA
@@ -1817,7 +2351,7 @@
             </div>
 
             <!-- Sección 5: Firmas -->
-            <div class="form-section">
+            <div class="form-section wizard-step" data-step="6">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 10H7v-2h9v2zm0 4H7v-2h9v2zm0 4H7v-2h9v2zm4-8h-3V6h3v6z"/></svg>
                     5. FIRMA EN CONSTANCIA
@@ -1856,6 +2390,17 @@
                 </div>
             </div>
 
+            <!-- Navegación del Wizard -->
+            <div class="wizard-nav">
+                <button type="button" class="btn btn-secondary" id="wizardPrev" onclick="irAPaso(currentStep - 1)">
+                    ← Anterior
+                </button>
+                <span class="wizard-step-info">Paso <span id="currentStepNum">1</span> de 6</span>
+                <button type="button" class="btn btn-primary" id="wizardNext" onclick="irAPaso(currentStep + 1)">
+                    Siguiente →
+                </button>
+            </div>
+
             <!-- Acciones del Formulario -->
             <div class="actions">
                 <button type="button" class="btn btn-secondary" onclick="verOrdenesGuardadas()">
@@ -1892,11 +2437,66 @@
                     <h3>Órdenes de Trabajo Guardadas</h3>
                     <button class="modal-close" onclick="cerrarModal()">&times;</button>
                 </div>
+                <div class="backup-toolbar">
+                    <div class="backup-date-range">
+                        <label class="backup-label">Desde:</label>
+                        <input type="date" id="backupDesde" class="backup-date-input">
+                        <label class="backup-label">Hasta:</label>
+                        <input type="date" id="backupHasta" class="backup-date-input">
+                        <button type="button" class="btn-link" onclick="limpiarRangoFechas()">Limpiar</button>
+                    </div>
+                    <div class="backup-actions">
+                        <span class="backup-counter" id="backupCounter">0 órdenes seleccionadas</span>
+                        <button class="btn btn-backup" id="btnDescargarBackup" onclick="generarBackupZIPFiltrado()" title="Descargar las órdenes seleccionadas como archivo ZIP">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z M4 20v2h16v-2H4z"/></svg>
+                            Descargar ZIP
+                        </button>
+                        <label class="btn btn-restore" for="restaurarBackupInput" title="Subir un archivo ZIP de backup para restaurar las órdenes">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                            Restaurar Backup
+                        </label>
+                        <input type="file" id="restaurarBackupInput" accept=".zip" style="display:none" onchange="manejarArchivoRestaurar(event)">
+                    </div>
+                    <div class="backup-status-row">
+                        <span class="backup-status" id="backupStatus"></span>
+                    </div>
+                </div>
                 <div class="modal-search">
                     <input type="text" id="buscadorOrdenes" placeholder="Buscar por número de consignación, coordinador o ciudad..." onkeyup="filtrarOrdenes()">
                 </div>
                 <div class="ordenes-lista" id="ordenesLista">
                     <!-- Las órdenes se mostrarán aquí -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Indicador de autoguardado de borrador -->
+        <div id="draftIndicator" class="draft-indicator idle">
+            <span class="dot"></span>
+            <span id="draftIndicatorText">Sin cambios</span>
+        </div>
+
+        <!-- Modal de recuperación de borrador -->
+        <div class="modal" id="modalRecuperarBorrador">
+            <div class="modal-content recovery-modal-content">
+                <div class="recovery-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-6h2v6zm0-8h-2V7h2v4z"/></svg>
+                </div>
+                <h3>Recuperar borrador</h3>
+                <p class="recovery-text">Tienes un formulario sin terminar. ¿Quieres recuperarlo o empezar uno nuevo?</p>
+                <div class="draft-info-box" id="draftInfoBox">
+                    <strong>Última modificación:</strong> <span id="draftFecha"></span><br>
+                    <strong>Coordinador:</strong> <span id="draftCoordinador">—</span>
+                </div>
+                <div class="recovery-actions">
+                    <button class="btn btn-success" onclick="recuperarBorrador()">
+                        <svg viewBox="0 0 24 24" fill="white" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                        Recuperar borrador
+                    </button>
+                    <button class="btn btn-secondary" onclick="descartarBorrador()">
+                        <svg viewBox="0 0 24 24" fill="white" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        Empezar nuevo
+                    </button>
                 </div>
             </div>
         </div>
@@ -3485,6 +4085,8 @@
                 `;
                 grid.appendChild(photoItem);
             });
+            // Actualizar el stepper cuando se renderizan fotos
+            if (typeof actualizarStepper === 'function') actualizarStepper();
         }
 
         // Actualizar coordenadas de una foto
@@ -3645,6 +4247,11 @@
             // Cerrar modal
             cerrarModal();
 
+            formInteracted = true;  // hay datos cargados
+            visitedSteps.clear();
+            for (let i = 1; i <= TOTAL_STEPS; i++) visitedSteps.add(i);
+            if (typeof actualizarStepper === 'function') actualizarStepper();
+
             alert('Orden cargada correctamente');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -3663,8 +4270,9 @@
         // IndexedDB para almacenar órdenes con fotos (soporta hasta 500MB+)
         let db;
         const DB_NAME = 'CEDENAROrdenesDB';
-        const DB_VERSION = 1;
+        const DB_VERSION = 2;
         const STORE_NAME = 'ordenes';
+        const STORE_NAME_DRAFTS = 'borradores';
 
         // Variable para rastrear la orden actual (para actualizar en lugar de crear nueva)
         let ordenActualId = null;
@@ -3689,8 +4297,361 @@
                     if (!database.objectStoreNames.contains(STORE_NAME)) {
                         database.createObjectStore(STORE_NAME, { keyPath: 'id' });
                     }
+                    if (!database.objectStoreNames.contains(STORE_NAME_DRAFTS)) {
+                        database.createObjectStore(STORE_NAME_DRAFTS, { keyPath: 'id' });
+                    }
                 };
             });
+        }
+
+        // ============================================================
+        // AUTOGUARDADO DE BORRADOR (cada 3s)
+        // ============================================================
+        const DRAFT_KEY = 'borrador_actual';
+        const AUTOSAVE_INTERVAL_MS = 3000;
+        let draftDirty = false;
+        let draftTimer = null;
+        let draftLastSaved = null;
+        let loadingDraft = false;
+        window._borradorPendiente = null;
+
+        // Actualizar el indicador visual
+        function actualizarIndicadorDraft(estado, texto) {
+            const el = document.getElementById('draftIndicator');
+            if (!el) return;
+            el.className = 'draft-indicator ' + estado;
+            const txt = document.getElementById('draftIndicatorText');
+            if (txt) txt.textContent = texto;
+        }
+
+        // Formatear tiempo relativo
+        function formatearTiempoRel(date) {
+            if (!date) return '';
+            const ahora = new Date();
+            const diff = Math.floor((ahora - date) / 1000);
+            if (diff < 5) return 'hace un momento';
+            if (diff < 60) return 'hace ' + diff + ' seg';
+            if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + ' min';
+            return date.toLocaleTimeString();
+        }
+
+        // Detectar si el formulario tiene datos
+        function formTieneDatos() {
+            const form = document.getElementById('workOrderForm');
+            if (!form) return false;
+            const inputs = form.querySelectorAll('input, select, textarea');
+            for (const input of inputs) {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    if (input.checked) return true;
+                } else if (input.value && input.name) {
+                    return true;
+                }
+            }
+            // Verificar si hay materiales
+            const materialRows = document.querySelectorAll('#materialsBody tr');
+            for (const row of materialRows) {
+                const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                if (desc && desc.value) return true;
+            }
+            // Verificar si hay fotos
+            for (const cat in photos) {
+                if (photos[cat] && photos[cat].length > 0) return true;
+            }
+            // Verificar firma
+            if (typeof signatureData !== 'undefined' && signatureData) return true;
+            return false;
+        }
+
+        // Guardar borrador en IndexedDB
+        async function guardarBorrador() {
+            if (loadingDraft) return;
+            if (!formTieneDatos()) {
+                actualizarIndicadorDraft('idle', 'Sin cambios');
+                return;
+            }
+            try {
+                if (!db) await initIndexedDB();
+
+                const form = document.getElementById('workOrderForm');
+                const datos = {};
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.type === 'radio') {
+                        if (input.checked) datos[input.name] = input.value;
+                    } else if (input.type === 'checkbox') {
+                        datos[input.name] = input.checked;
+                    } else if (input.name && input.name.endsWith('[]')) {
+                        if (!datos[input.name]) datos[input.name] = [];
+                        if (input.value) datos[input.name].push(input.value);
+                    } else if (input.name) {
+                        datos[input.name] = input.value;
+                    }
+                });
+
+                // Guardar materiales
+                const materialRows = document.querySelectorAll('#materialsBody tr');
+                datos.materiales = [];
+                materialRows.forEach(row => {
+                    const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                    const codigo = row.querySelector('input[name="materialCodigo[]"]');
+                    const cantidad = row.querySelector('input[name="materialCantidad[]"]');
+                    if (desc && (desc.value || (codigo && codigo.value) || (cantidad && cantidad.value))) {
+                        datos.materiales.push({
+                            descripcion: desc ? desc.value : '',
+                            codigo: codigo ? codigo.value : '',
+                            cantidad: cantidad ? cantidad.value : ''
+                        });
+                    }
+                });
+
+                actualizarIndicadorDraft('saving', 'Guardando borrador...');
+
+                const borrador = {
+                    id: DRAFT_KEY,
+                    fechaGuardado: new Date().toISOString(),
+                    datos: datos,
+                    fotos: JSON.parse(JSON.stringify(photos)),
+                    signatureData: (typeof signatureData !== 'undefined' && signatureData) ? signatureData : null
+                };
+
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                store.put(borrador);
+
+                await new Promise((resolve, reject) => {
+                    transaction.oncomplete = resolve;
+                    transaction.onerror = () => reject(transaction.error);
+                });
+
+                draftLastSaved = new Date();
+                draftDirty = false;
+                actualizarIndicadorDraft('saved', 'Guardado ' + formatearTiempoRel(draftLastSaved));
+            } catch (e) {
+                console.error('Error guardando borrador:', e);
+                actualizarIndicadorDraft('error', 'Error al guardar borrador');
+            }
+        }
+
+        // Listener que se dispara al cambiar cualquier campo
+        function onFormChange() {
+            if (loadingDraft || isResetting) return;
+            formInteracted = true;  // el usuario tocó el form
+            if (!formTieneDatos()) {
+                actualizarIndicadorDraft('idle', 'Sin cambios');
+                return;
+            }
+            draftDirty = true;
+            actualizarIndicadorDraft('dirty', 'Cambios sin guardar...');
+            if (draftTimer) clearTimeout(draftTimer);
+            draftTimer = setTimeout(function() {
+                guardarBorrador();
+            }, AUTOSAVE_INTERVAL_MS);
+            // Actualizar colores del stepper en tiempo real
+            if (typeof actualizarStepper === 'function') actualizarStepper();
+        }
+
+        // Inicializar el sistema de autoguardado
+        function initAutoSave() {
+            const form = document.getElementById('workOrderForm');
+            if (!form) return;
+            form.addEventListener('input', onFormChange);
+            form.addEventListener('change', onFormChange);
+
+            // Observar cambios en la tabla de materiales (filas agregadas/eliminadas)
+            const materialsBody = document.getElementById('materialsBody');
+            if (materialsBody && typeof MutationObserver !== 'undefined') {
+                const observer = new MutationObserver(onFormChange);
+                observer.observe(materialsBody, { childList: true, subtree: true });
+            }
+
+            // Actualizar el texto del indicador cada 5 segundos (tiempo relativo)
+            setInterval(function() {
+                if (draftLastSaved && !draftDirty) {
+                    actualizarIndicadorDraft('saved', 'Guardado ' + formatearTiempoRel(draftLastSaved));
+                }
+            }, 5000);
+        }
+
+        // Verificar si hay un borrador guardado al cargar la página
+        async function verificarBorrador() {
+            try {
+                if (!db) await initIndexedDB();
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readonly');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                const request = store.get(DRAFT_KEY);
+
+                await new Promise(function(resolve, reject) {
+                    request.onsuccess = function() {
+                        const borrador = request.result;
+                        if (borrador && borrador.datos) {
+                            // Verificar que tenga datos significativos
+                            const tieneDatos = Object.keys(borrador.datos).some(function(k) {
+                                const v = borrador.datos[k];
+                                if (v === null || v === undefined) return false;
+                                if (typeof v === 'string') return v.length > 0;
+                                if (Array.isArray(v)) return v.length > 0;
+                                if (typeof v === 'object') return Object.keys(v).length > 0;
+                                return true;
+                            });
+                            if (tieneDatos) {
+                                mostrarModalRecuperacion(borrador);
+                            }
+                        }
+                        resolve();
+                    };
+                    request.onerror = function() { reject(request.error); };
+                });
+            } catch (e) {
+                console.error('Error verificando borrador:', e);
+            }
+        }
+
+        function mostrarModalRecuperacion(borrador) {
+            const fecha = new Date(borrador.fechaGuardado);
+            const fechaEl = document.getElementById('draftFecha');
+            const coordEl = document.getElementById('draftCoordinador');
+            if (fechaEl) fechaEl.textContent = fecha.toLocaleString();
+            if (coordEl) coordEl.textContent = borrador.datos.coordinador || '(sin asignar)';
+            const modal = document.getElementById('modalRecuperarBorrador');
+            if (modal) modal.classList.add('active');
+            window._borradorPendiente = borrador;
+        }
+
+        function recuperarBorrador() {
+            const borrador = window._borradorPendiente;
+            if (!borrador) return;
+
+            loadingDraft = true;
+            try {
+                const form = document.getElementById('workOrderForm');
+                // Restaurar valores del formulario
+                for (const key in borrador.datos) {
+                    if (key === 'materiales') continue;
+                    const inputs = form.querySelectorAll('[name="' + key + '"]');
+                    inputs.forEach(function(input) {
+                        if (borrador.datos[key] === undefined || borrador.datos[key] === null) return;
+                        if (input.type === 'radio' || input.type === 'checkbox') {
+                            input.checked = (input.value === borrador.datos[key]);
+                        } else if (Array.isArray(borrador.datos[key])) {
+                            // Materiales se manejan abajo
+                        } else {
+                            input.value = borrador.datos[key];
+                        }
+                    });
+                }
+
+                // Restaurar materiales
+                if (borrador.datos.materiales && borrador.datos.materiales.length > 0) {
+                    const tbody = document.getElementById('materialsBody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        borrador.datos.materiales.forEach(function(mat) {
+                            if (typeof addMaterialRow === 'function') addMaterialRow();
+                            const rows = tbody.querySelectorAll('tr');
+                            const lastRow = rows[rows.length - 1];
+                            if (!lastRow) return;
+                            const descEl = lastRow.querySelector('input[name="materialDescripcion[]"]');
+                            const codEl = lastRow.querySelector('input[name="materialCodigo[]"]');
+                            const cantEl = lastRow.querySelector('input[name="materialCantidad[]"]');
+                            if (descEl) descEl.value = mat.descripcion || '';
+                            if (codEl) codEl.value = mat.codigo || '';
+                            if (cantEl) cantEl.value = mat.cantidad || '';
+                        });
+                    }
+                }
+
+                // Restaurar fotos
+                if (borrador.fotos) {
+                    Object.keys(borrador.fotos).forEach(function(key) {
+                        photos[key] = borrador.fotos[key] || [];
+                    });
+                    ['antes','durante','despues','activo','lugar','permiso','egreso'].forEach(function(cat) {
+                        if (typeof renderPhotos === 'function') renderPhotos(cat);
+                    });
+                }
+
+                // Restaurar firma
+                if (borrador.signatureData) {
+                    signatureData = borrador.signatureData;
+                    const canvas = document.getElementById('signaturePad');
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        const img = new Image();
+                        img.onload = function() {
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        };
+                        img.src = borrador.signatureData;
+                    }
+                    const statusEl = document.getElementById('signatureStatus');
+                    if (statusEl) {
+                        statusEl.textContent = '✓ Firma aplicada correctamente';
+                        statusEl.className = 'signature-status applied';
+                    }
+                }
+
+                // Restaurar display del coordinador
+                if (borrador.datos.nombreCoordinadorFirma) {
+                    const displayEl = document.getElementById('displayCoordinador');
+                    if (displayEl) displayEl.textContent = borrador.datos.nombreCoordinadorFirma;
+                }
+
+                // Actualizar visibilidad de campos según tipo de evento
+                if (typeof toggleRevisionMode === 'function') toggleRevisionMode();
+            } catch (e) {
+                console.error('Error recuperando borrador:', e);
+            }
+
+            const modal = document.getElementById('modalRecuperarBorrador');
+            if (modal) modal.classList.remove('active');
+            window._borradorPendiente = null;
+
+            draftLastSaved = new Date(borrador.fechaGuardado);
+            draftDirty = false;
+            formInteracted = true;  // hay datos cargados
+            visitedSteps.clear();
+            for (let i = 1; i <= TOTAL_STEPS; i++) visitedSteps.add(i);  // marcar todos
+            actualizarIndicadorDraft('saved', 'Borrador recuperado');
+            if (typeof actualizarStepper === 'function') actualizarStepper();
+
+            setTimeout(function() { loadingDraft = false; }, 800);
+        }
+
+        async function descartarBorrador() {
+            try {
+                if (!db) await initIndexedDB();
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                store.delete(DRAFT_KEY);
+                await new Promise(function(resolve) { transaction.oncomplete = resolve; });
+            } catch (e) {
+                console.error('Error descartando borrador:', e);
+            }
+            const modal = document.getElementById('modalRecuperarBorrador');
+            if (modal) modal.classList.remove('active');
+            window._borradorPendiente = null;
+            draftLastSaved = null;
+            draftDirty = false;
+            formInteracted = false;  // empieza nuevo, sin interacciones previas
+            visitedSteps.clear();
+            visitedSteps.add(1);
+            actualizarIndicadorDraft('idle', 'Sin cambios');
+            if (typeof actualizarStepper === 'function') actualizarStepper();
+        }
+
+        // Eliminar borrador (usado al guardar orden o crear nueva)
+        async function eliminarBorradorSiExiste() {
+            try {
+                if (!db) await initIndexedDB();
+                const transaction = db.transaction([STORE_NAME_DRAFTS], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME_DRAFTS);
+                store.delete(DRAFT_KEY);
+                await new Promise(function(resolve) { transaction.oncomplete = resolve; });
+            } catch (e) {
+                console.error('Error eliminando borrador:', e);
+            }
+            draftLastSaved = null;
+            draftDirty = false;
+            actualizarIndicadorDraft('idle', 'Sin cambios');
         }
 
         // Comprimir imagen a base64 con calidad reducida
@@ -3848,6 +4809,8 @@
                     if (!ordenActualId) {
                         ordenActualId = ordenData.id;
                     }
+                    // Eliminar el borrador ya que la orden quedó guardada oficialmente
+                    eliminarBorradorSiExiste();
                     alert('Orden de trabajo guardada exitosamente\n\nPuede imprimir o generar PDF desde las opciones.\n\nAlmacenamiento: IndexedDB (alta capacidad)');
                 };
 
@@ -4017,6 +4980,10 @@
                     }
 
                     cerrarModal();
+                    formInteracted = true;  // hay datos cargados
+                    visitedSteps.clear();
+                    for (let i = 1; i <= TOTAL_STEPS; i++) visitedSteps.add(i);
+                    if (typeof actualizarStepper === 'function') actualizarStepper();
                     alert('Orden cargada correctamente');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 };
@@ -4480,7 +5447,10 @@
         // Nueva orden
         function nuevoFormulario() {
             if (confirm('¿Está seguro de crear una nueva orden? Los datos no guardados se perderán.')) {
+                isResetting = true;  // bloquear eventos durante el reset
                 document.getElementById('workOrderForm').reset();
+                // Eliminar borrador pendiente
+                eliminarBorradorSiExiste();
                 // Limpiar fotos
                 photos.antes = [];
                 photos.durante = [];
@@ -4498,6 +5468,22 @@
                 renderPhotos('egreso');
                 // Reset tabs
                 showPhotoPanel('realizado');
+                // Limpiar firma digital (canvas + variable global)
+                signatureData = null;
+                const signatureCanvas = document.getElementById('signaturePad');
+                if (signatureCanvas) {
+                    const ctx = signatureCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+                }
+                const signatureStatus = document.getElementById('signatureStatus');
+                if (signatureStatus) {
+                    signatureStatus.textContent = '';
+                    signatureStatus.className = 'signature-status';
+                }
+                const displayCoord = document.getElementById('displayCoordinador');
+                if (displayCoord) displayCoord.textContent = 'Firma';
+                // Resetear el ID de orden actual (clave para no sobrescribir la anterior)
+                ordenActualId = null;
                 // Agregar una fila de material vacía
                 const tbody = document.getElementById('materialsBody');
                 tbody.innerHTML = `
@@ -4505,9 +5491,22 @@
                         <td><input type="text" name="materialDescripcion[]" placeholder="Descripción del material"></td>
                         <td><input type="text" name="materialCodigo[]" placeholder="Código"></td>
                         <td><input type="number" name="materialCantidad[]" placeholder="Cantidad" min="1"></td>
-                        <td><button type="button" class="btn btn-danger" onclick="removeMaterialRow(this)">X</button></td>
+                        <td><button type="button" class="btn btn-danger" onclick="removeMaterialRow(this)">X</button>
                     </tr>
                 `;
+                // Volver al paso 1 (esto muestra la sección 1, oculta las demás)
+                irAPaso(1);
+                // Resetear estado del stepper para que aparezca todo en gris
+                formInteracted = false;
+                visitedSteps.clear();
+                visitedSteps.add(1);
+                if (typeof actualizarStepper === 'function') actualizarStepper();
+                // Scroll al inicio del formulario
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Reactivar eventos después de un breve retraso
+                setTimeout(function() {
+                    isResetting = false;
+                }, 100);
             }
         }
 
@@ -4530,6 +5529,13 @@
                 renderPhotos('permiso');
                 renderPhotos('egreso');
                 showPhotoPanel('realizado');
+                // Volver al paso 1
+                irAPaso(1);
+                formInteracted = false;
+                visitedSteps.clear();
+                visitedSteps.add(1);
+                if (typeof actualizarStepper === 'function') actualizarStepper();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 alert('Orden eliminada');
             }
         }
@@ -4601,7 +5607,1246 @@
         // Inicializar estado al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             toggleRevisionMode();
+            initAutoSave();
+            verificarBorrador();
+            initWizard();
+            initVoiceButtons();
+            verificarBackupAutomatico();
+
+            // Listeners de los inputs de fecha del backup
+            const backupDesde = document.getElementById('backupDesde');
+            const backupHasta = document.getElementById('backupHasta');
+            if (backupDesde) backupDesde.addEventListener('change', actualizarContadorBackup);
+            if (backupHasta) backupHasta.addEventListener('change', actualizarContadorBackup);
+
+            // Actualizar contador al abrir el modal de órdenes
+            const originalVerOrdenes = verOrdenesGuardadas;
+            window.verOrdenesGuardadas = async function() {
+                await originalVerOrdenes();
+                actualizarContadorBackup();
+            };
         });
+
+        // ============================================================
+        // SISTEMA DE BACKUP ZIP (Manual + Automático cada 7 días)
+        // ============================================================
+        const BACKUP_INTERVAL_DAYS = 7;
+        const BACKUP_KEY = 'cedenar_last_auto_backup';
+
+        // Genera el nombre del archivo según las reglas:
+        // Ordenes_Cedenar_Mes_dia_año_{periodo}.zip
+        //   - manual → "manual"
+        //   - 7 días → "7dias"
+        //   - N días → "Ndias"
+        function getBackupFilename(periodo) {
+            const now = new Date();
+            const meses = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            const mes = meses[now.getMonth()];
+            const dia = now.getDate();
+            const anio = now.getFullYear();
+
+            let periodoStr;
+            if (periodo === 'manual') {
+                periodoStr = 'manual';
+            } else {
+                const diasNum = parseInt(periodo, 10);
+                periodoStr = diasNum + 'dias';
+            }
+            return `Ordenes_Cedenar_${mes}_${dia}_${anio}_${periodoStr}.zip`;
+        }
+
+        // Convierte data URL (base64) a Blob
+        function dataURLtoBlob(dataURL) {
+            if (!dataURL) return null;
+            if (typeof dataURL === 'string' && dataURL.startsWith('data:')) {
+                const arr = dataURL.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) u8arr[n] = bstr.charCodeAt(n);
+                return new Blob([u8arr], { type: mime });
+            }
+            try {
+                const bstr = atob(dataURL);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) u8arr[n] = bstr.charCodeAt(n);
+                return new Blob([u8arr], { type: 'image/jpeg' });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Convierte un Blob a data URL (base64)
+        function blobToDataURL(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Obtiene la extensión según el mime type
+        function getExtensionFromMime(mime) {
+            if (!mime) return 'jpg';
+            if (mime.indexOf('jpeg') !== -1 || mime.indexOf('jpg') !== -1) return 'jpg';
+            if (mime.indexOf('png') !== -1) return 'png';
+            if (mime.indexOf('webp') !== -1) return 'webp';
+            if (mime.indexOf('gif') !== -1) return 'gif';
+            return 'jpg';
+        }
+
+        // Lee todas las órdenes desde IndexedDB
+        function getAllOrdenesFromDB() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    initIndexedDB().then(() => {
+                        const tx = db.transaction([STORE_NAME], 'readonly');
+                        const store = tx.objectStore(STORE_NAME);
+                        const req = store.getAll();
+                        req.onsuccess = () => resolve(req.result || []);
+                        req.onerror = () => reject(req.error);
+                    }).catch(reject);
+                } else {
+                    const tx = db.transaction([STORE_NAME], 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result || []);
+                    req.onerror = () => reject(req.error);
+                }
+            });
+        }
+
+        // Filtra las órdenes según el rango de fechas seleccionado
+        // Usa orden.id (timestamp Date.now()) para evitar problemas de parseo de fechas localizadas
+        function filtrarOrdenesPorFecha(ordenes) {
+            const desdeStr = document.getElementById('backupDesde')?.value;
+            const hastaStr = document.getElementById('backupHasta')?.value;
+
+            // Si no hay rango, devolver todas
+            if (!desdeStr && !hastaStr) return ordenes;
+
+            // Convertir fechas a timestamps (inicio/final del día)
+            let desdeTs = null, hastaTs = null;
+            if (desdeStr) {
+                const d = new Date(desdeStr + 'T00:00:00');
+                desdeTs = d.getTime();
+            }
+            if (hastaStr) {
+                const d = new Date(hastaStr + 'T23:59:59.999');
+                hastaTs = d.getTime();
+            }
+
+            return ordenes.filter(o => {
+                if (desdeTs !== null && o.id < desdeTs) return false;
+                if (hastaTs !== null && o.id > hastaTs) return false;
+                return true;
+            });
+        }
+
+        // Actualiza el contador de órdenes seleccionadas
+        async function actualizarContadorBackup() {
+            try {
+                const todas = await getAllOrdenesFromDB();
+                const filtradas = filtrarOrdenesPorFecha(todas);
+                const counter = document.getElementById('backupCounter');
+                if (counter) {
+                    counter.textContent = `${filtradas.length} de ${todas.length} órdenes`;
+                }
+            } catch (e) {
+                // Silencioso
+            }
+        }
+
+        // Limpia el rango de fechas
+        function limpiarRangoFechas() {
+            document.getElementById('backupDesde').value = '';
+            document.getElementById('backupHasta').value = '';
+            actualizarContadorBackup();
+        }
+
+        // Genera el ZIP filtrado por fechas (manual con rango)
+        async function generarBackupZIPFiltrado() {
+            await generarBackupZIP('manual');
+        }
+
+        // Genera el ZIP y dispara la descarga
+        async function generarBackupZIP(periodo) {
+            const statusEl = document.getElementById('backupStatus');
+            const btn = document.querySelector('#btnDescargarBackup');
+            try {
+                if (typeof JSZip === 'undefined') {
+                    throw new Error('La librería JSZip no se cargó. Verifica tu conexión a internet.');
+                }
+                if (btn) btn.disabled = true;
+                if (statusEl) {
+                    statusEl.textContent = 'Preparando backup...';
+                    statusEl.className = 'backup-status';
+                }
+
+                let ordenes = await getAllOrdenesFromDB();
+                ordenes = filtrarOrdenesPorFecha(ordenes);
+
+                if (ordenes.length === 0) {
+                    if (statusEl) {
+                        statusEl.textContent = 'No hay órdenes en el rango seleccionado';
+                        statusEl.className = 'backup-status error';
+                    }
+                    mostrarToast('No hay órdenes en el rango de fechas seleccionado', 'error');
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+
+                if (statusEl) statusEl.textContent = `Comprimiendo ${ordenes.length} orden(es)...`;
+
+                const zip = new JSZip();
+                const manifest = {
+                    fechaBackup: new Date().toISOString(),
+                    tipoBackup: periodo,
+                    totalOrdenes: ordenes.length,
+                    cedenar: 'CEDENAR S.A.E.S.P.',
+                    rangoFechas: {
+                        desde: document.getElementById('backupDesde')?.value || null,
+                        hasta: document.getElementById('backupHasta')?.value || null
+                    },
+                    ordenes: []
+                };
+
+                for (let i = 0; i < ordenes.length; i++) {
+                    const orden = ordenes[i];
+                    const folderName = `orden_${orden.id}`;
+                    const folder = zip.folder(folderName);
+
+                    // 1. data.json
+                    const dataForJSON = {
+                        id: orden.id,
+                        nombreOrden: orden.nombreOrden || '',
+                        fechaGuardado: orden.fechaGuardado || '',
+                        datos: orden.datos || {}
+                    };
+                    folder.file('data.json', JSON.stringify(dataForJSON, null, 2));
+
+                    // 2. Firma
+                    if (orden.datos && orden.datos.firma) {
+                        const firmaBlob = dataURLtoBlob(orden.datos.firma);
+                        if (firmaBlob) folder.file('firma.png', firmaBlob);
+                    } else if (orden.firma) {
+                        const firmaBlob = dataURLtoBlob(orden.firma);
+                        if (firmaBlob) folder.file('firma.png', firmaBlob);
+                    }
+
+                    // 3. Fotos
+                    const fotosFolder = folder.folder('fotos');
+                    let totalFotos = 0;
+                    const categorias = ['antes', 'durante', 'despues', 'activo', 'lugar', 'permiso', 'egreso'];
+                    const ordenFotos = {};
+
+                    for (const cat of categorias) {
+                        const lista = (orden.fotos && orden.fotos[cat]) || [];
+                        ordenFotos[cat] = [];
+                        for (let j = 0; j < lista.length; j++) {
+                            const foto = lista[j];
+                            if (!foto || !foto.data) continue;
+                            const blob = dataURLtoBlob(foto.data);
+                            if (!blob) continue;
+                            const ext = getExtensionFromMime(blob.type);
+                            const fname = `${cat}_${j + 1}.${ext}`;
+                            fotosFolder.file(fname, blob);
+                            ordenFotos[cat].push({
+                                nombreArchivo: fname,
+                                fecha: foto.date || '',
+                                ubicacion: foto.location || '',
+                                nombreOriginal: foto.name || fname
+                            });
+                            totalFotos++;
+                        }
+                    }
+
+                    folder.file('fotos_index.json', JSON.stringify(ordenFotos, null, 2));
+                    manifest.ordenes.push({
+                        id: orden.id,
+                        nombreOrden: orden.nombreOrden || '',
+                        fechaGuardado: orden.fechaGuardado || '',
+                        totalFotos: totalFotos
+                    });
+
+                    if (statusEl) statusEl.textContent = `Procesando ${i + 1}/${ordenes.length}...`;
+                }
+
+                zip.file('ordenes.json', JSON.stringify(manifest, null, 2));
+
+                if (statusEl) statusEl.textContent = 'Generando archivo ZIP...';
+
+                const blob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                }, function(metadata) {
+                    if (statusEl) {
+                        const pct = Math.round(metadata.percent);
+                        statusEl.textContent = `Comprimiendo ZIP... ${pct}%`;
+                    }
+                });
+
+                const filename = getBackupFilename(periodo);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+                if (periodo !== 'manual') {
+                    localStorage.setItem(BACKUP_KEY, new Date().toISOString());
+                }
+
+                if (statusEl) {
+                    statusEl.textContent = `✓ Backup descargado: ${filename}`;
+                    statusEl.className = 'backup-status success';
+                }
+                const mensaje = periodo === 'manual'
+                    ? `Backup manual descargado: ${ordenes.length} órdenes`
+                    : `Backup automático (${periodo} días) descargado: ${ordenes.length} órdenes`;
+                mostrarToast(mensaje, 'success');
+
+            } catch (e) {
+                console.error('Error generando backup:', e);
+                if (statusEl) {
+                    statusEl.textContent = '✗ Error: ' + e.message;
+                    statusEl.className = 'backup-status error';
+                }
+                mostrarToast('Error al generar backup: ' + e.message, 'error');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // RESTAURAR BACKUP DESDE ZIP
+        // ============================================================
+
+        // Maneja el archivo seleccionado por el usuario
+        function manejarArchivoRestaurar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.zip')) {
+                mostrarToast('Por favor selecciona un archivo ZIP válido', 'error');
+                event.target.value = '';
+                return;
+            }
+            confirmarRestaurarBackup(file);
+            event.target.value = ''; // Reset para permitir seleccionar el mismo archivo
+        }
+
+        // Muestra un modal de confirmación antes de restaurar
+        async function confirmarRestaurarBackup(file) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'restoreConfirmModal';
+            modal.innerHTML = `
+                <div class="modal-content restore-progress-content">
+                    <div class="restore-progress-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                    </div>
+                    <h3>Restaurar Backup</h3>
+                    <p>Archivo seleccionado: <strong>${file.name}</strong></p>
+                    <p style="color:#666;font-size:0.9em;">Tamaño: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <div class="restore-warning">
+                        ⚠️ Las órdenes existentes con el mismo ID serán <strong>sobrescritas</strong> con los datos del backup.
+                    </div>
+                    <div class="voice-perm-actions">
+                        <button class="btn btn-success" id="restoreGoBtn">
+                            <svg viewBox="0 0 24 24" fill="white" style="width:18px;height:18px;vertical-align:middle;margin-right:6px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            Restaurar ahora
+                        </button>
+                        <button class="btn btn-secondary" id="restoreCancelBtn">Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('restoreGoBtn').addEventListener('click', function() {
+                modal.remove();
+                ejecutarRestaurarBackup(file);
+            });
+            document.getElementById('restoreCancelBtn').addEventListener('click', function() {
+                modal.remove();
+            });
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.remove();
+            });
+        }
+
+        // Ejecuta la restauración mostrando progreso
+        async function ejecutarRestaurarBackup(file) {
+            const progressModal = document.createElement('div');
+            progressModal.className = 'modal active';
+            progressModal.id = 'restoreProgressModal';
+            progressModal.innerHTML = `
+                <div class="modal-content restore-progress-content">
+                    <div class="restore-progress-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+                    </div>
+                    <h3>Restaurando backup...</h3>
+                    <div class="restore-progress-bar">
+                        <div class="restore-progress-fill" id="restoreProgressFill"></div>
+                    </div>
+                    <p class="restore-progress-text" id="restoreProgressText">Leyendo archivo ZIP...</p>
+                </div>
+            `;
+            document.body.appendChild(progressModal);
+
+            const progressFill = document.getElementById('restoreProgressFill');
+            const progressText = document.getElementById('restoreProgressText');
+
+            try {
+                if (typeof JSZip === 'undefined') {
+                    throw new Error('La librería JSZip no se cargó.');
+                }
+
+                progressText.textContent = 'Leyendo archivo ZIP...';
+                progressFill.style.width = '10%';
+
+                const arrayBuffer = await file.arrayBuffer();
+                const zip = await JSZip.loadAsync(arrayBuffer);
+
+                progressText.textContent = 'Analizando contenido...';
+                progressFill.style.width = '20%';
+
+                // Buscar todas las carpetas orden_*
+                const ordenFolders = [];
+                zip.forEach(function(relativePath, zipEntry) {
+                    const match = relativePath.match(/^orden_(\d+)\//);
+                    if (match && !ordenFolders.includes(match[1])) {
+                        ordenFolders.push(match[1]);
+                    }
+                });
+
+                if (ordenFolders.length === 0) {
+                    throw new Error('No se encontraron órdenes en el archivo. ¿Es un backup de CEDENAR?');
+                }
+
+                // Asegurar que DB esté lista
+                if (!db) await initIndexedDB();
+
+                let importadas = 0;
+                let fotosImportadas = 0;
+                let errores = 0;
+
+                for (let i = 0; i < ordenFolders.length; i++) {
+                    const ordenId = ordenFolders[i];
+                    const folder = zip.folder(`orden_${ordenId}`);
+
+                    progressText.textContent = `Importando orden ${i + 1} de ${ordenFolders.length}...`;
+                    progressFill.style.width = `${20 + (i / ordenFolders.length) * 70}%`;
+
+                    try {
+                        // Leer data.json
+                        const dataFile = folder.file('data.json');
+                        if (!dataFile) {
+                            errores++;
+                            continue;
+                        }
+                        const dataStr = await dataFile.async('string');
+                        const dataParsed = JSON.parse(dataStr);
+
+                        // Leer fotos desde fotos_index.json
+                        const fotosIndexFile = folder.file('fotos_index.json');
+                        let fotosIndex = {};
+                        if (fotosIndexFile) {
+                            try {
+                                fotosIndex = JSON.parse(await fotosIndexFile.async('string'));
+                            } catch (e) {}
+                        }
+
+                        // Reconstruir estructura de fotos
+                        const fotos = {
+                            antes: [], durante: [], despues: [],
+                            activo: [], lugar: [], permiso: [], egreso: []
+                        };
+                        const fotosFolder = folder.folder('fotos');
+                        if (fotosFolder && fotosIndex) {
+                            for (const cat in fotosIndex) {
+                                if (!fotos[cat]) continue;
+                                for (const fotoMeta of fotosIndex[cat]) {
+                                    try {
+                                        const fotoFile = fotosFolder.file(fotoMeta.nombreArchivo);
+                                        if (!fotoFile) continue;
+                                        const blob = await fotoFile.async('blob');
+                                        const dataURL = await blobToDataURL(blob);
+                                        fotos[cat].push({
+                                            id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+                                            data: dataURL,
+                                            name: fotoMeta.nombreOriginal || fotoMeta.nombreArchivo,
+                                            date: fotoMeta.fecha || new Date().toISOString(),
+                                            location: fotoMeta.ubicacion || ''
+                                        });
+                                        fotosImportadas++;
+                                    } catch (e) {
+                                        console.warn('Error importando foto:', e);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Reconstruir la orden completa
+                        const ordenCompleta = {
+                            id: dataParsed.id || parseInt(ordenId, 10),
+                            nombreOrden: dataParsed.nombreOrden || '',
+                            fechaGuardado: dataParsed.fechaGuardado || new Date().toLocaleString(),
+                            datos: dataParsed.datos || {},
+                            fotos: fotos
+                        };
+
+                        // Guardar en IndexedDB (sobrescribe si existe)
+                        await new Promise((resolve, reject) => {
+                            const tx = db.transaction([STORE_NAME], 'readwrite');
+                            const store = tx.objectStore(STORE_NAME);
+                            store.put(ordenCompleta);
+                            tx.oncomplete = () => resolve();
+                            tx.onerror = () => reject(tx.error);
+                        });
+
+                        importadas++;
+                    } catch (e) {
+                        console.error('Error importando orden', ordenId, e);
+                        errores++;
+                    }
+                }
+
+                progressFill.style.width = '100%';
+                progressText.textContent = '¡Restauración completada!';
+
+                // Mostrar resumen
+                setTimeout(() => {
+                    progressModal.remove();
+                    const resumenHTML = `
+                        <div class="modal-content restore-progress-content">
+                            <div class="restore-progress-icon" style="background:#d4edda;">
+                                <svg viewBox="0 0 24 24" fill="#28a745"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            </div>
+                            <h3>Restauración completada</h3>
+                            <div class="restore-summary">
+                                <div class="restore-summary-item"><span>Órdenes importadas:</span><strong>${importadas}</strong></div>
+                                <div class="restore-summary-item"><span>Fotos restauradas:</span><strong>${fotosImportadas}</strong></div>
+                                ${errores > 0 ? `<div class="restore-summary-item"><span>Errores:</span><strong style="color:#dc3545">${errores}</strong></div>` : ''}
+                            </div>
+                            <button class="btn btn-success" onclick="cerrarResumenRestaurar()">Aceptar</button>
+                        </div>
+                    `;
+                    const resumenModal = document.createElement('div');
+                    resumenModal.className = 'modal active';
+                    resumenModal.id = 'restoreSummaryModal';
+                    resumenModal.innerHTML = resumenHTML;
+                    document.body.appendChild(resumenModal);
+
+                    // Refrescar la lista de órdenes si está abierta
+                    if (typeof verOrdenesGuardadas === 'function') {
+                        verOrdenesGuardadas();
+                    }
+                }, 600);
+
+                mostrarToast(`Backup restaurado: ${importadas} órdenes, ${fotosImportadas} fotos`, 'success');
+
+            } catch (e) {
+                console.error('Error restaurando backup:', e);
+                progressModal.remove();
+                mostrarToast('Error al restaurar: ' + e.message, 'error');
+            }
+        }
+
+        // Cierra el modal de resumen
+        function cerrarResumenRestaurar() {
+            const m = document.getElementById('restoreSummaryModal');
+            if (m) m.remove();
+            // Refrescar lista de órdenes
+            if (typeof verOrdenesGuardadas === 'function') {
+                verOrdenesGuardadas();
+            }
+        }
+
+        // Muestra un toast (notificación) temporal
+        function mostrarToast(mensaje, tipo) {
+            const toast = document.createElement('div');
+            toast.className = 'backup-toast' + (tipo === 'error' ? ' error' : '');
+            toast.textContent = mensaje;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.4s';
+                setTimeout(() => toast.remove(), 400);
+            }, 4500);
+        }
+
+        // Verifica si toca hacer backup automático
+        function verificarBackupAutomatico() {
+            try {
+                const lastBackupStr = localStorage.getItem(BACKUP_KEY);
+                const now = new Date();
+                let necesitaBackup = false;
+
+                if (!lastBackupStr) {
+                    necesitaBackup = true;
+                } else {
+                    const lastBackup = new Date(lastBackupStr);
+                    const diffMs = now - lastBackup;
+                    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+                    if (diffDays >= BACKUP_INTERVAL_DAYS) {
+                        necesitaBackup = true;
+                    }
+                }
+
+                if (necesitaBackup) {
+                    setTimeout(() => {
+                        // Backup automático de las órdenes de los últimos 7 días
+                        const hace7Dias = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        const desdeStr = hace7Dias.toISOString().split('T')[0];
+                        const desdeInput = document.getElementById('backupDesde');
+                        if (desdeInput) {
+                            desdeInput.value = desdeStr;
+                        }
+                        generarBackupZIP(BACKUP_INTERVAL_DAYS);
+                    }, 3000);
+                }
+            } catch (e) {
+                console.error('Error verificando backup automático:', e);
+            }
+        }
+
+        // ============================================================
+        // WIZARD DE NAVEGACIÓN POR PASOS
+        // ============================================================
+        let currentStep = 1;
+        const TOTAL_STEPS = 6;
+        // Indica si el usuario ya interactuó con el formulario.
+        // Si es false, todos los pasos se muestran en gris (orden nueva).
+        let formInteracted = false;
+        // Pasos que el usuario ha visitado. Solo estos se evalúan para color.
+        // Un paso no visitado se queda en gris aunque tenga datos.
+        const visitedSteps = new Set([1]);
+        // Bloquea eventos del formulario durante un reset (nueva orden, eliminar)
+        // para que el MutationObserver no reactive formInteracted.
+        let isResetting = false;
+
+        function irAPaso(step) {
+            if (step < 1 || step > TOTAL_STEPS) return;
+            formInteracted = true;  // navegar = interacción
+            visitedSteps.add(step);  // marcar como visitado
+            currentStep = step;
+
+            // Mostrar/ocultar secciones según el paso
+            document.querySelectorAll('.form-section.wizard-step').forEach(function(section) {
+                const stepNum = parseInt(section.dataset.step, 10);
+                if (stepNum === currentStep) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+
+            // Actualizar estado de los botones de navegación
+            const prevBtn = document.getElementById('wizardPrev');
+            const nextBtn = document.getElementById('wizardNext');
+            if (prevBtn) prevBtn.disabled = (currentStep === 1);
+            if (nextBtn) nextBtn.disabled = (currentStep === TOTAL_STEPS);
+
+            // Texto "Paso X de 5"
+            const infoEl = document.getElementById('currentStepNum');
+            if (infoEl) infoEl.textContent = currentStep;
+
+            // FIX FIRMA: al entrar al paso 6, el canvas estaba con width=0
+            // porque initSignaturePad() corrió cuando estaba display:none.
+            // Disparar un resize le da su tamaño real.
+            if (currentStep === 6) {
+                setTimeout(function() {
+                    window.dispatchEvent(new Event('resize'));
+                }, 50);
+            }
+
+            // Actualizar colores del stepper según estado de los datos
+            actualizarStepper();
+
+            // Scroll al inicio del formulario
+            const form = document.getElementById('workOrderForm');
+            if (form) {
+                const rect = form.getBoundingClientRect();
+                if (rect.top < 0 || rect.top > 200) {
+                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        // Determina el estado de llenado de un paso: 'empty' | 'partial' | 'complete'
+        function getStepFillState(stepNum) {
+            const form = document.getElementById('workOrderForm');
+            if (!form) return 'empty';
+
+            function inputFilled(name) {
+                const inputs = form.querySelectorAll('[name="' + name + '"]');
+                for (const input of inputs) {
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        if (input.checked) return true;
+                    } else if (input.value && input.value.trim().length > 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if (stepNum === 1) {
+                // Planificación: tipo evento + fecha + (consignación o revisión) + circuito + coordinador
+                const required = ['tipoEvento', 'fechaInicioProg', 'circuito', 'coordinador'];
+                const tipo = form.querySelector('input[name="tipoEvento"]:checked');
+                if (tipo && tipo.value === 'REVISION') {
+                    required.push('numeroRevision');
+                } else {
+                    required.push('consignacion');
+                }
+                let filled = 0;
+                for (const name of required) {
+                    if (inputFilled(name)) filled++;
+                }
+                // Si falta cualquier campo → amarillo (no gris)
+                if (filled === required.length) return 'complete';
+                return 'partial';
+            }
+
+            if (stepNum === 2) {
+                // Ejecución: fecha inicio + fecha fin
+                const required = ['fechaInicio', 'fechaFinalizacion'];
+                let filled = 0;
+                for (const name of required) {
+                    if (inputFilled(name)) filled++;
+                }
+                // Si falta cualquier fecha → amarillo
+                if (filled === required.length) return 'complete';
+                return 'partial';
+            }
+
+            if (stepNum === 3) {
+                // Materiales:
+                // - Sin requisición Y sin materiales → COMPLETO (verde, no se usaron)
+                // - Con requisición + materiales → COMPLETO
+                // - Cualquier otra combinación → PARCIAL (falta algo)
+                const reqInput = form.querySelector('[name="requisicionMateriales"]');
+                const hasRequisicion = reqInput && reqInput.value && reqInput.value.trim().length > 0;
+
+                const rows = document.querySelectorAll('#materialsBody tr');
+                let hasMaterial = false;
+                for (const row of rows) {
+                    const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                    if (desc && desc.value && desc.value.trim().length > 0) {
+                        hasMaterial = true;
+                        break;
+                    }
+                }
+
+                // Vacío = no se usaron materiales = OK (verde)
+                if (!hasRequisicion && !hasMaterial) return 'complete';
+                // Tiene ambos = OK
+                if (hasRequisicion && hasMaterial) return 'complete';
+                // Solo uno de los dos = falta el otro
+                return 'partial';
+            }
+
+            if (stepNum === 4) {
+                // Fotos: debe haber al menos 1 foto en CADA categoría principal
+                // (antes, durante, después) → si falta alguna → parcial
+                const mainCats = ['antes', 'durante', 'despues'];
+                const hasAll = mainCats.every(function(cat) {
+                    return photos[cat] && photos[cat].length > 0;
+                });
+                if (hasAll) return 'complete';
+                // Cualquier faltante (incluyendo 0 fotos) → amarillo
+                return 'partial';
+            }
+
+            if (stepNum === 5) {
+                // Permiso de Trabajo Seguro en Altura:
+                // Si hay foto/PDF del permiso → completo
+                // Si NO hay nada → parcial (amarillo) — siempre recordar adjuntarlo
+                if (photos.permiso && photos.permiso.length > 0) return 'complete';
+                return 'partial';
+            }
+
+            if (stepNum === 6) {
+                // Firma: signatureData presente
+                if (typeof signatureData !== 'undefined' && signatureData) return 'complete';
+                // Sin firma = amarillo (hay que firmar)
+                return 'partial';
+            }
+
+            return 'empty';
+        }
+
+        // Actualiza el color de cada paso del stepper según su estado
+        function actualizarStepper() {
+            document.querySelectorAll('.wizard-step-item').forEach(function(item) {
+                item.classList.remove('active', 'empty', 'partial', 'completed');
+            });
+
+            // Si el usuario NO ha interactuado todavía (orden nueva) → todo gris
+            if (!formInteracted) {
+                document.querySelectorAll('.wizard-step-item').forEach(function(item) {
+                    const stepTarget = parseInt(item.dataset.stepTarget, 10);
+                    if (stepTarget === currentStep) {
+                        item.classList.add('active');
+                    }
+                    // Los demás: sin clase → gris
+                });
+                // Limpiar cualquier highlight de campos o notas
+                document.querySelectorAll('.field-missing').forEach(function(el) {
+                    el.classList.remove('field-missing');
+                });
+                document.querySelectorAll('.missing-note').forEach(function(el) {
+                    el.remove();
+                });
+                return;
+            }
+
+            // Usuario ya interactuó → aplicar reglas normales
+            // PERO: solo evaluar pasos que el usuario ha visitado
+            document.querySelectorAll('.wizard-step-item').forEach(function(item) {
+                const stepTarget = parseInt(item.dataset.stepTarget, 10);
+                if (stepTarget === currentStep) {
+                    item.classList.add('active');
+                    return;
+                }
+                // Pasos NO visitados se quedan en gris (sin clase)
+                if (!visitedSteps.has(stepTarget)) return;
+                const state = getStepFillState(stepTarget);
+                if (state === 'partial') item.classList.add('partial');
+                else if (state === 'complete') item.classList.add('completed');
+                // 'empty' → no se aplica ninguna clase → queda gris
+            });
+
+            // Conectores: verde si el paso a la izquierda está visitado Y completo
+            const connectors = document.querySelectorAll('.wizard-step-connector');
+            connectors.forEach(function(conn, i) {
+                const leftStepNum = i + 1;
+                if (!visitedSteps.has(leftStepNum)) {
+                    conn.classList.remove('completed');
+                    return;
+                }
+                const leftState = getStepFillState(leftStepNum);
+                if (leftState === 'complete') {
+                    conn.classList.add('completed');
+                } else {
+                    conn.classList.remove('completed');
+                }
+            });
+
+            // Marcar visualmente los inputs/secciones que necesitan datos
+            // Solo para pasos visitados (los no visitados están en gris, sin notas/bordes)
+            marcarCamposFaltantes();
+        }
+
+        // Resalta campos vacíos en pasos parciales (estado amarillo)
+        function marcarCamposFaltantes() {
+            // 1) Limpiar marcadores previos
+            document.querySelectorAll('.field-missing').forEach(function(el) {
+                el.classList.remove('field-missing');
+            });
+            document.querySelectorAll('.missing-note').forEach(function(el) {
+                el.remove();
+            });
+
+            const form = document.getElementById('workOrderForm');
+            if (!form) return;
+
+            // Helpers
+            function markInput(name) {
+                const els = form.querySelectorAll('[name="' + name + '"]');
+                els.forEach(function(el) {
+                    if (el.type === 'radio' || el.type === 'checkbox') return;
+                    if (!el.value || !el.value.trim()) {
+                        el.classList.add('field-missing');
+                    }
+                });
+            }
+            function addNote(containerEl, text) {
+                if (!containerEl) return;
+                if (containerEl.querySelector('.missing-note')) return;
+                const note = document.createElement('p');
+                note.className = 'missing-note';
+                note.textContent = '⚠ ' + text;
+                containerEl.appendChild(note);
+            }
+
+            // ===== PASO 1: Planificación =====
+            if (visitedSteps.has(1) && getStepFillState(1) === 'partial') {
+                markInput('fechaInicioProg');
+                const tipo = form.querySelector('input[name="tipoEvento"]:checked');
+                if (!tipo) {
+                    // Buscar contenedor del grupo de radios tipoEvento
+                    const firstRadio = form.querySelector('input[name="tipoEvento"]');
+                    if (firstRadio) {
+                        const grp = firstRadio.closest('.form-group');
+                        if (grp) addNote(grp, 'Selecciona el tipo de evento');
+                    }
+                }
+                const req2 = (tipo && tipo.value === 'REVISION') ? 'numeroRevision' : 'consignacion';
+                markInput(req2);
+                markInput('circuito');
+                markInput('coordinador');
+            }
+
+            // ===== PASO 2: Ejecución =====
+            if (visitedSteps.has(2) && getStepFillState(2) === 'partial') {
+                markInput('fechaInicio');
+                markInput('fechaFinalizacion');
+            }
+
+            // ===== PASO 3: Materiales =====
+            if (visitedSteps.has(3) && getStepFillState(3) === 'partial') {
+                // Marcar requisición si está vacía
+                markInput('requisicionMateriales');
+                // Marcar filas de materiales vacías
+                const rows = document.querySelectorAll('#materialsBody tr');
+                rows.forEach(function(row) {
+                    const desc = row.querySelector('input[name="materialDescripcion[]"]');
+                    if (desc && !desc.value.trim()) {
+                        desc.classList.add('field-missing');
+                    }
+                });
+            }
+
+            // ===== PASO 4: Fotos =====
+            if (visitedSteps.has(4) && getStepFillState(4) === 'partial') {
+                ['antes', 'durante', 'despues'].forEach(function(cat) {
+                    if (!photos[cat] || photos[cat].length === 0) {
+                        const grid = document.getElementById(cat + 'Grid');
+                        if (grid) {
+                            const category = grid.closest('.photo-category');
+                            addNote(category, 'Sube al menos 1 foto de ' + cat);
+                        }
+                    }
+                });
+            }
+
+            // ===== PASO 5: Permiso =====
+            if (visitedSteps.has(5) && getStepFillState(5) === 'partial') {
+                const grid = document.getElementById('permisoGrid');
+                if (grid) {
+                    // El permiso está en un .form-section (no en .photo-category)
+                    // Ponemos la nota al inicio de la sección, después del título
+                    const section = grid.closest('.form-section');
+                    if (section) {
+                        const title = section.querySelector('.section-title');
+                        if (title) {
+                            // Verificar que no exista ya
+                            if (!section.querySelector('.missing-note')) {
+                                const note = document.createElement('p');
+                                note.className = 'missing-note';
+                                note.textContent = '⚠ Adjunte el permiso de trabajo (imagen o PDF)';
+                                title.insertAdjacentElement('afterend', note);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ===== PASO 6: Firma =====
+            if (visitedSteps.has(6) && getStepFillState(6) === 'partial') {
+                const canvas = document.getElementById('signaturePad');
+                if (canvas) {
+                    const container = canvas.closest('.signature-pad-container');
+                    addNote(container, 'Dibuja la firma del coordinador en el recuadro');
+                }
+            }
+        }
+
+        function initWizard() {
+            // Click en cualquier círculo del stepper para navegar
+            document.querySelectorAll('.wizard-step-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    irAPaso(parseInt(item.dataset.stepTarget, 10));
+                });
+            });
+            // Iniciar en el paso 1 (sin marcar como interacción)
+            irAPaso(1);
+            formInteracted = false;  // reset tras la carga inicial
+        }
+
+        // ============================================================
+        // RECONOCIMIENTO DE VOZ (Web Speech API)
+        // ============================================================
+        // Campos que tendrán botón de micrófono
+        const VOICE_FIELDS = [
+            'descripcionTrabajos',
+            'observaciones',
+            'observacionesEjecucion'
+        ];
+
+        // Inyecta los botones de micrófono en los textareas configurados
+        function initVoiceButtons() {
+            VOICE_FIELDS.forEach(function(fieldId) {
+                const field = document.getElementById(fieldId);
+                if (!field) return;
+                const formGroup = field.closest('.form-group');
+                if (!formGroup) return;
+                formGroup.classList.add('textarea-with-voice');
+                formGroup.style.position = 'relative';
+
+                // Botón de micrófono
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'voice-btn';
+                btn.dataset.field = fieldId;
+                btn.title = 'Dictar por voz (clic para iniciar, 5s de silencio = parar)';
+                btn.setAttribute('aria-label', 'Dictar por voz');
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>';
+                btn.addEventListener('click', function() { iniciarVoz(fieldId); });
+                formGroup.appendChild(btn);
+
+                // Indicador de estado (cuando está grabando)
+                const status = document.createElement('span');
+                status.className = 'voice-status';
+                status.textContent = '🎤 Escuchando...';
+                status.dataset.field = fieldId;
+                formGroup.appendChild(status);
+            });
+        }
+
+        // Inicia el reconocimiento de voz para un campo
+        function iniciarVoz(fieldId) {
+            const field = document.getElementById(fieldId);
+            const btn = document.querySelector('.voice-btn[data-field="' + fieldId + '"]');
+            const status = document.querySelector('.voice-status[data-field="' + fieldId + '"]');
+            if (!field) return;
+
+            // Si ya está grabando, parar
+            if (field._voiceRecognition) {
+                field._voiceRecognition.stop();
+                return;
+            }
+
+            // Verificar soporte del navegador
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                const ua = navigator.userAgent;
+                let msg = 'Tu navegador no soporta reconocimiento de voz.\n\n';
+                if (/iPhone|iPad|iPod/.test(ua)) {
+                    msg += 'En iOS, usa Safari (iOS 14.5+).\n\n';
+                } else if (/Android/.test(ua)) {
+                    msg += 'En Android, usa Chrome o Edge.\n\n';
+                } else {
+                    msg += 'Usa Chrome, Edge o Safari.\n\n';
+                }
+                msg += 'También verifica que la página se cargue por HTTPS (no file://)';
+                alert(msg);
+                return;
+            }
+
+            // Verificar contexto seguro (HTTPS o localhost)
+            if (!window.isSecureContext) {
+                alert('🔒 La función de voz requiere HTTPS.\n\n' +
+                    'Estás accediendo por file:// o HTTP.\n\n' +
+                    'Soluciones:\n' +
+                    '• Sube la app a un servidor HTTPS (Render, Netlify, Vercel)\n' +
+                    '• O usa localhost durante desarrollo\n' +
+                    '• O accede por HTTPS desde un dominio seguro');
+                return;
+            }
+
+            // Ir directo al reconocimiento — el navegador mostrará su propio diálogo de permiso
+            iniciarReconocimiento(fieldId);
+        }
+
+        // Muestra mensaje cuando el permiso fue denegado (con instrucciones por dispositivo)
+        function mostrarDialogoPermisoDenegado() {
+            const ua = navigator.userAgent;
+            const isMobile = /Mobi|Android|iPhone|iPad|iPod/.test(ua);
+            const isIOS = /iPhone|iPad|iPod/.test(ua);
+            const isAndroid = /Android/.test(ua);
+            const isChrome = /Chrome/.test(ua) && !/Edg/.test(ua);
+            const isEdge = /Edg/.test(ua);
+            const isFirefox = /Firefox/.test(ua);
+            const isSamsung = /SamsungBrowser/.test(ua);
+
+            let instrucciones = '🔒 Permiso de micrófono bloqueado\n\n';
+
+            if (isIOS) {
+                instrucciones += '📱 En iPhone/iPad (Safari):\n';
+                instrucciones += '1. Abre la app Configuración del iPhone\n';
+                instrucciones += '2. Busca y toca "Safari"\n';
+                instrucciones += '3. Toca "Micrófono"\n';
+                instrucciones += '4. Selecciona "Permitir"\n';
+                instrucciones += '5. Vuelve a la app y recarga la página';
+            } else if (isAndroid) {
+                if (isChrome) {
+                    instrucciones += '📱 En Android (Chrome):\n';
+                    instrucciones += '1. Toca el ícono 🔒 (candado) en la barra de dirección\n';
+                    instrucciones += '2. Toca "Permisos"\n';
+                    instrucciones += '3. Activa "Micrófono"\n';
+                    instrucciones += '4. Recarga la página';
+                } else if (isSamsung) {
+                    instrucciones += '📱 En Samsung Internet:\n';
+                    instrucciones += '1. Toca el menú ⋮ (tres puntos)\n';
+                    instrucciones += '2. Toca "Configuración del sitio"\n';
+                    instrucciones += '3. Toca "Micrófono"\n';
+                    instrucciones += '4. Permite el acceso';
+                } else {
+                    instrucciones += '📱 En Android:\n';
+                    instrucciones += '1. Toca el ícono de permisos en la barra de dirección\n';
+                    instrucciones += '2. Busca "Micrófono" y actívalo\n';
+                    instrucciones += '3. Recarga la página';
+                }
+            } else if (isChrome) {
+                instrucciones += '💻 En Chrome (escritorio):\n';
+                instrucciones += '1. Toca el ícono 🔒 en la barra de dirección\n';
+                instrucciones += '2. Toca "Configuración de sitios"\n';
+                instrucciones += '3. Activa "Micrófono"\n';
+                instrucciones += '4. Recarga la página';
+            } else if (isEdge) {
+                instrucciones += '💻 En Edge:\n';
+                instrucciones += '1. Toca el ícono 🔒 en la barra de dirección\n';
+                instrucciones += '2. Toca "Permisos para este sitio"\n';
+                instrucciones += '3. Activa "Micrófono"';
+            } else if (isFirefox) {
+                instrucciones += '💻 En Firefox:\n';
+                instrucciones += 'Firefox no soporta el reconocimiento de voz de esta app.\n';
+                instrucciones += 'Usa Chrome o Edge.';
+            } else {
+                instrucciones += 'Busca la configuración de permisos del sitio en tu navegador y permite el micrófono.';
+            }
+
+            alert(instrucciones);
+        }
+
+        // Inicia el reconocimiento de voz (después de pedir permiso)
+        function iniciarReconocimiento(fieldId) {
+            const field = document.getElementById(fieldId);
+            const btn = document.querySelector('.voice-btn[data-field="' + fieldId + '"]');
+            const status = document.querySelector('.voice-status[data-field="' + fieldId + '"]');
+            if (!field) return;
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            // Idioma español de Colombia (más cercano a la pronunciación local)
+            recognition.lang = 'es-CO';
+            // Mostrar resultados provisionales mientras habla
+            recognition.interimResults = true;
+            // Modo continuo: no corta tras cada pausa
+            recognition.continuous = true;
+            // Pedimos 3 alternativas para poder usar la más "fiel" a lo dicho
+            recognition.maxAlternatives = 3;
+
+            // Texto base (lo que ya está escrito)
+            let baseText = field.value.trim();
+            // Buffer de segmentos finales pendientes
+            let finalBuffer = '';
+
+            // Timer de silencio (5s)
+            let silenceTimer = null;
+            const SILENCE_MS = 5000;
+
+            function resetSilenceTimer() {
+                if (silenceTimer) clearTimeout(silenceTimer);
+                silenceTimer = setTimeout(function() {
+                    recognition.stop();
+                }, SILENCE_MS);
+            }
+
+            // Construye texto con la mejor alternativa: la que menos se desvía
+            // de la longitud esperada (heurística simple para evitar auto-correcciones largas)
+            function pickBestAlternative(alternatives) {
+                // alternatives = [{transcript, confidence}, ...]
+                if (!alternatives || alternatives.length === 0) return '';
+                if (alternatives.length === 1) return alternatives[0].transcript;
+
+                // Estrategia: usar la alternativa con MAYOR confianza
+                // (generalmente es la más fiel a lo que se dijo)
+                let best = alternatives[0];
+                for (let i = 1; i < alternatives.length; i++) {
+                    if (alternatives[i].confidence > best.confidence) {
+                        best = alternatives[i];
+                    }
+                }
+                return best.transcript;
+            }
+
+            recognition.onstart = function() {
+                if (btn) btn.classList.add('recording');
+                if (status) status.classList.add('active');
+                field._voiceRecognition = recognition;
+                resetSilenceTimer();
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const result = event.results[i];
+                    // Tomamos la mejor alternativa por confianza
+                    const altList = [];
+                    for (let j = 0; j < result.length; j++) {
+                        altList.push({
+                            transcript: result[j].transcript,
+                            confidence: result[j].confidence || 0
+                        });
+                    }
+                    const bestText = pickBestAlternative(altList);
+
+                    if (result.isFinal) {
+                        finalTranscript += bestText;
+                    } else {
+                        interimTranscript += bestText;
+                    }
+                }
+
+                // Acumular texto final al baseText
+                if (finalTranscript) {
+                    finalBuffer = (finalBuffer + ' ' + finalTranscript).trim();
+                }
+
+                // Mostrar final + interim (provisional) — usa lo más fiel a lo dicho
+                const display = finalBuffer + (interimTranscript ? ' ' + interimTranscript : '');
+                field.value = display.trim() ? (baseText + ' ' + display).trim() : baseText;
+
+                // Reiniciar timer de silencio
+                resetSilenceTimer();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error de reconocimiento de voz:', event.error);
+                if (event.error === 'no-speech') {
+                    recognition.stop();
+                } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    mostrarDialogoPermisoDenegado();
+                } else if (event.error === 'audio-capture') {
+                    alert('No se pudo acceder al micrófono. Verifica que esté conectado y permitido.');
+                }
+            };
+
+            recognition.onend = function() {
+                if (btn) btn.classList.remove('recording');
+                if (status) status.classList.remove('active');
+                if (silenceTimer) clearTimeout(silenceTimer);
+                field._voiceRecognition = null;
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error('Error al iniciar reconocimiento:', e);
+                alert('No se pudo iniciar el reconocimiento de voz. Intenta de nuevo.');
+            }
+        }
 
         // Actualizar nombres en firmas en tiempo real
         document.getElementById('nombreCoordinadorFirma').addEventListener('input', function() {
