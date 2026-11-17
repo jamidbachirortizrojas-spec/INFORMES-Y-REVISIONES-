@@ -1,0 +1,57 @@
+{
+  "name": "CEDENAR OT - Órdenes de Trabajo",
+  "short_name": "CEDENAR OT",
+  "description": "Sistema de gestión de órdenes de trabajo de CEDENAR S.A.E.S.P. — Centrales Eléctricas de Nariño. Funciona offline, instalación local.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e3c72",
+  "theme_color": "#1e3c72",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nueva orden de trabajo",
+      "short_name": "Nueva OT",
+      "description": "Crear una nueva orden de trabajo",
+      "url": "./index.html#nueva",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Órdenes guardadas",
+      "short_name": "Mis OTs",
+      "description": "Ver las órdenes guardadas",
+      "url": "./index.html#ordenes",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}
